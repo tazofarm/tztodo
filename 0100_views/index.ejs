@@ -158,6 +158,23 @@
     let isDragging = false;
     let dragStartTime = 0, dragStartX = 0, dragStartY = 0;
 
+    function startTracking(e) {
+      const point = e.touches ? e.touches[0] : e;
+      dragStartTime = Date.now();
+      dragStartX = point.clientX;
+      dragStartY = point.clientY;
+      isDragging = false;
+    }
+
+    function endTracking(e, text, colIndex, itemIndex) {
+      const point = e.changedTouches ? e.changedTouches[0] : e;
+      const elapsed = Date.now() - dragStartTime;
+      const dist = Math.hypot(point.clientX - dragStartX, point.clientY - dragStartY);
+      if (elapsed < 300 && dist < 5 && !isDragging) {
+        showPopup(text, colIndex, itemIndex);
+      }
+    }
+
     function getColumns() {
       return parseInt(localStorage.getItem('columnCount')) || 1;
     }
@@ -256,18 +273,10 @@
           btn.className = "todo-btn";
           btn.textContent = todo;
 
-          btn.addEventListener('mousedown', e => {
-            dragStartTime = Date.now();
-            dragStartX = e.clientX;
-            dragStartY = e.clientY;
-            isDragging = false;
-          });
-
-          btn.addEventListener('mouseup', e => {
-            const elapsed = Date.now() - dragStartTime;
-            const dist = Math.hypot(e.clientX - dragStartX, e.clientY - dragStartY);
-            if (elapsed < 300 && dist < 5 && !isDragging) showPopup(todo, i, j);
-          });
+          btn.addEventListener('mousedown', startTracking);
+          btn.addEventListener('mouseup', e => endTracking(e, todo, i, j));
+          btn.addEventListener('touchstart', startTracking);
+          btn.addEventListener('touchend', e => endTracking(e, todo, i, j));
 
           colDiv.appendChild(btn);
         });
