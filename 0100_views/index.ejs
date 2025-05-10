@@ -142,9 +142,10 @@
 <body>
   <div class="container">
     <div class="top-buttons">
-      <button onclick="addNewTodo()">➕ 추가</button>
+            <button id="settingsBtn" onclick="goToSettings()">⚙️ 설정</button>
+
       <textarea id="newTodo" placeholder="새 할 일 입력" rows="2"></textarea>
-      <button id="settingsBtn" onclick="goToSettings()">⚙️ 설정</button>
+      <button onclick="addNewTodo()">➕ 추가</button>
     </div>
     <div id="todoButtons"></div>
     <div id="popupOverlay"><div id="popup"></div></div>
@@ -179,9 +180,15 @@
       return parseInt(localStorage.getItem('columnCount')) || 1;
     }
 
-    function getTodoColumns() {
-      return JSON.parse(localStorage.getItem('todoColumns')) || Array(getColumns()).fill().map(() => []);
-    }
+function getTodoColumns() {
+  const stored = localStorage.getItem('todoColumns');
+  if (stored) return JSON.parse(stored);
+
+  // 최초 실행 시 기본 할 일 3개 생성
+  const initial = [["안녕하세요", "미래를", "응원합니다"]];
+  localStorage.setItem("todoColumns", JSON.stringify(initial));
+  return initial;
+}
 
     function setTodoColumns(columns) {
       localStorage.setItem('todoColumns', JSON.stringify(columns));
