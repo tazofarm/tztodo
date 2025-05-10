@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TZ todo</title>
+  <link rel="stylesheet" href="/css/3000.css" />
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    body.light-theme {
+      background-color: #f2f2f2;
+      color: #000;
+    }
+    body.dark-theme {
+      background-color: #222;
+      color: #fff;
+    }
+    .container {
+      display: flex;
+      flex-direction: column;
+      padding: 16px;
+      min-height: 100vh;
+      padding-bottom: 80px;
+    }
+    .top-buttons {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .top-buttons textarea {
+      font-size: 1rem;
+      padding: 0.6em 0.8em;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      resize: vertical;
+      width: 100%;
+      min-height: 44px;
+    }
+    .top-buttons button {
+      font-size: 1rem;
+      border: none;
+      border-radius: 6px;
+      padding: 0.6em 0.8em;
+      min-height: 44px;
+    }
+    #todoButtons {
+      display: flex;
+      gap: 8px;
+    }
+    .column {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .todo-btn {
+      padding: 0.6em 0.8em;
+      border-radius: 6px;
+      border: 1px solid;
+      line-height: 1.2;
+      cursor: grab;
+      white-space: pre-wrap;
+    }
+    .todo-btn.chosen,
+    .todo-btn.dragging {
+      background-color: #bbb !important;
+    }
+    #popupOverlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.3);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+    }
+    #popup {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      min-width: 240px;
+    }
+    #popup button, #popup textarea {
+      display: block;
+      width: 100%;
+      margin: 6px 0;
+      padding: 10px;
+    }
+    #admob {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 60px;
+      text-align: center;
+      line-height: 60px;
+      font-size: 14px;
+      z-index: 1000;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="top-buttons">
+      <button onclick="addNewTodo()">➕ 추가</button>
+      <textarea id="newTodo" placeholder="새 할 일 입력" rows="2"></textarea>
+      <button id="settingsBtn" onclick="goToSettings()">⚙️ 설정</button>
+    </div>
+    <div id="todoButtons"></div>
+    <div id="popupOverlay"><div id="popup"></div></div>
+    <div id="settingsPanel" class="hidden">
+      <button onclick="clearTodos()">모두 삭제</button>
+    </div>
+  </div>
+  <div id="admob">광고 자리</div>
+
+  <script>
+    let isDragging = false;
+    let dragStartTime = 0, dragStartX = 0, dragStartY = 0;
+
+    function getColumns() {
+      return parseInt(localStorage.getItem('columnCount')) || 1;
+    }
+
+    function getTodoColumns() {
+      return JSON.parse(localStorage.getItem('todoColumns')) || Array(getColumns()).fill().map(() => []);
+    }
+
+    function setTodoColumns(columns) {
+      localStorage.setItem('todoColumns', JSON.stringify(columns));
+    }
+
+    function addNewTodo() {
+      const input = document.getElementById("newTodo");
+      const value = input.value.trim();
+      if (!value) return;
+      const columns = getTodoColumns();
+      columns[0].push(value);
+      setTodoColumns(columns);
+      input.value = "";
+      renderTodos();
+    }
+
+    function clearTodos() {
+      localStorage.removeItem("todoColumns");
+      renderTodos();
+    }
+
+    function showPopup(text, colIndex, itemIndex) {
+      const popup = document.getElementById("popup");
+      const overlay = document.getElementById("popupOverlay");
+      popup.innerHTML = `
+        <div style="margin-bottom: 1em; white-space: pre-wrap;">${text}</div>
+        <button onclick="startEdit(${colIndex}, ${itemIndex})">✏️ 수정</button>
+        <button onclick="deleteTodo(${colIndex}, ${itemIndex})">🗑 삭제</button>
+        <button onclick="closePopup()">❌ 취소</button>
+      `;
+      overlay.style.display = 'flex';
+    }
+
+    function startEdit(colIndex, itemIndex) {
+      const columns = getTodoColumns();
+      const popup = document.getElementById("popup");
+      const value = columns[colIndex][itemIndex];
+      popup.innerHTML = `
+        <textarea id="editTextarea" rows="3">${value}</textarea>
+        <button onclick="saveEdit(${colIndex}, ${itemIndex})">확인</button>
+        <button onclick="closePopup()">취소</button>
+      `;
+    }
+
+    function saveEdit(colIndex, itemIndex) {
+      const textarea = document.getElementById("editTextarea");
+      const value = textarea.value.trim();
+      if (!value) return;
+      const columns = getTodoColumns();
+      columns[colIndex][itemIndex] = value;
+      setTodoColumns(columns);
+      closePopup();
+      renderTodos();
+    }
+
+    function closePopup() {
+      document.getElementById("popupOverlay").style.display = 'none';
+    }
+
+    function deleteTodo(colIndex, itemIndex) {
+      const columns = getTodoColumns();
+      columns[colIndex].splice(itemIndex, 1);
+      setTodoColumns(columns);
+      closePopup();
+      renderTodos();
+    }
+
+    function renderTodos() {
+      const container = document.getElementById("todoButtons");
+      const columns = getTodoColumns();
+      const colCount = getColumns();
+
+      while (columns.length < colCount) columns.push([]);
+      while (columns.length > colCount) {
+        const moved = columns.pop();
+        columns[0].push(...moved);
+      }
+
+      setTodoColumns(columns);
+      container.innerHTML = "";
+
+      for (let i = 0; i < colCount; i++) {
+        const colDiv = document.createElement("div");
+        colDiv.className = "column";
+        colDiv.dataset.index = i;
+
+        columns[i].forEach((todo, j) => {
+          const btn = document.createElement("button");
+          btn.className = "todo-btn";
+          btn.textContent = todo;
+
+          btn.addEventListener('mousedown', e => {
+            dragStartTime = Date.now();
+            dragStartX = e.clientX;
+            dragStartY = e.clientY;
+            isDragging = false;
+          });
+
+          btn.addEventListener('mouseup', e => {
+            const elapsed = Date.now() - dragStartTime;
+            const dist = Math.hypot(e.clientX - dragStartX, e.clientY - dragStartY);
+            if (elapsed < 300 && dist < 5 && !isDragging) showPopup(todo, i, j);
+          });
+
+          colDiv.appendChild(btn);
+        });
+
+        container.appendChild(colDiv);
+      }
+
+      Array.from(container.children).forEach((colDiv, i) => {
+        Sortable.create(colDiv, {
+          group: 'todo-columns',
+          animation: 150,
+          delay: 300,
+          delayOnTouchOnly: true,
+          ghostClass: 'dragging',
+          chosenClass: 'chosen',
+          onStart: () => isDragging = true,
+          onEnd: () => {
+            const newColumns = Array.from(container.children).map(col =>
+              Array.from(col.querySelectorAll('.todo-btn')).map(btn => btn.textContent)
+            );
+            setTodoColumns(newColumns);
+          }
+        });
+      });
+    }
+
+    function goToSettings() {
+      window.location.href = '/setting';
+    }
+
+    function applySettings() {
+      const theme = localStorage.getItem('theme') || 'light';
+      document.body.classList.remove('light-theme', 'dark-theme');
+      document.body.classList.add(theme + '-theme');
+    }
+
+    applySettings();
+    renderTodos();
+  </script>
+</body>
+</html>

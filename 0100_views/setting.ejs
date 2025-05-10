@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>설정</title>
+  <link rel="stylesheet" href="/css/3000.css" />
+</head>
+<body>
+  <div class="container">
+    <h2>⚙️ 설정</h2>
+
+    <!-- 배경 설정 -->
+    <div>
+      <label>배경 설정:</label><br />
+      <label><input type="radio" name="theme" value="light"> 라이트모드</label><br />
+      <label><input type="radio" name="theme" value="dark"> 다크모드</label>
+    </div>
+
+    <!-- 배열 수 -->
+    <div style="margin-top: 15px;">
+      <label for="columnCount">배열 수:</label>
+      <select id="columnCount">
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+      </select>
+    </div>
+
+    <!-- 글자 크기 -->
+    <div style="margin-top: 15px;">
+      <label for="fontSize">글자 크기:</label>
+      <select id="fontSize">
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+      </select>
+    </div>
+
+    <!-- 글자 정렬 -->
+    <div style="margin-top: 15px;">
+      <label>글자 정렬:</label><br />
+      <label><input type="radio" name="align" value="left"> 왼쪽</label><br />
+      <label><input type="radio" name="align" value="center"> 가운데</label><br />
+      <label><input type="radio" name="align" value="right"> 오른쪽</label>
+    </div>
+
+    <div style="margin-top: 20px;">
+      <button onclick="saveSettings()">저장</button>
+      <button onclick="window.location.href='/'">홈으로</button>
+    </div>
+  </div>
+
+  <script>
+    window.onload = function () {
+      // 기본값 지정
+      const theme = localStorage.getItem('theme') || 'light';
+      const columnCount = localStorage.getItem('columnCount') || '1';
+      const fontSize = localStorage.getItem('fontSize') || '3';
+      const align = localStorage.getItem('textAlign') || 'center';
+
+      localStorage.setItem('theme', theme);
+      localStorage.setItem('columnCount', columnCount);
+      localStorage.setItem('fontSize', fontSize);
+      localStorage.setItem('textAlign', align);
+
+      // 라디오/셀렉트 선택 반영
+      document.querySelector(`input[name="theme"][value="${theme}"]`).checked = true;
+      document.getElementById('columnCount').value = columnCount;
+      document.getElementById('fontSize').value = fontSize;
+      document.querySelector(`input[name="align"][value="${align}"]`).checked = true;
+    }
+
+    function saveSettings() {
+      const theme = document.querySelector('input[name="theme"]:checked')?.value;
+      const columnCount = document.getElementById('columnCount').value;
+      const fontSize = document.getElementById('fontSize').value;
+      const align = document.querySelector('input[name="align"]:checked')?.value;
+
+      if (theme) localStorage.setItem('theme', theme);
+      localStorage.setItem('columnCount', columnCount);
+      localStorage.setItem('fontSize', fontSize);
+      if (align) localStorage.setItem('textAlign', align);
+
+      alert('설정이 저장되었습니다.');
+    }
+  </script>
+</body>
+</html>
