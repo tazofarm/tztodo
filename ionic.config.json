@@ -1,5 +1,7 @@
 {
   "name": "tztodo",
-  "integrations": {},
+  "integrations": {
+    "capacitor": {}
+  },
   "type": "vue"
 }

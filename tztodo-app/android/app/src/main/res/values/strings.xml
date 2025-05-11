@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">tztodo</string>
-    <string name="title_activity_main">tztodo</string>
-    <string name="package_name">org.duckdns.tztodo</string>
-    <string name="custom_url_scheme">org.duckdns.tztodo</string>
+    <string name="app_name">tztodo-app</string>
+    <string name="title_activity_main">tztodo-app</string>
+    <string name="package_name">io.ionic.starter</string>
+    <string name="custom_url_scheme">io.ionic.starter</string>
 </resources>
