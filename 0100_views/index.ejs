@@ -13,45 +13,76 @@
       padding: 0;
       height: 100%;
       font-family: 'Segoe UI', sans-serif;
+      transition: background-color 0.3s, color 0.3s;
     }
-    body.light-theme {
-      background-color: #f2f2f2;
-      color: #000;
-    }
-    body.dark-theme {
+    body.dark-mode {
       background-color: #121212;
-      color: #f0f0f0;
+      color: #e0e0e0;
+    }
+    body.dark-mode textarea,
+    body.dark-mode button,
+    body.dark-mode .todo-btn,
+    body.dark-mode #popup {
+      background-color: #1e1e1e;
+      color: #e0e0e0;
+      border-color: #444;
+    }
+    body.dark-mode .todo-btn {
+      border: 1px solid #555;
+    }
+    body.light-mode {
+      background-color: #ffffff;
+      color: #000000;
     }
     .container {
-      display: flex;
-      flex-direction: column;
       padding: 16px;
-      min-height: 100vh;
-      padding-bottom: 80px;
+      background-color: inherit;
     }
-    .top-buttons {
+    .top-bar {
       display: grid;
-      grid-template-columns: auto 1fr auto;
+      grid-template-columns: 1fr auto;
       gap: 8px;
       margin-bottom: 10px;
     }
-    .top-buttons textarea {
+    .top-bar textarea {
       font-size: 1rem;
-      padding: 0.6em 0.8em;
+      padding: 0.6em;
       border-radius: 6px;
       border: 1px solid #ccc;
       resize: vertical;
-      width: 100%;
       min-height: 44px;
     }
-    .top-buttons button {
+    .top-bar button {
       font-size: 1rem;
+      padding: 0.6em 1em;
       border: none;
       border-radius: 6px;
-      padding: 0.6em 0.8em;
-      min-height: 44px;
+      cursor: pointer;
     }
-    #todoButtons {
+    .add-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .add-row button {
+      flex: 1;
+      font-size: 1rem;
+      height: 48px;
+      line-height: 48px;
+      text-align: center;
+      border: none;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #ccc;
+      color: #000;
+    }
+    body.dark-mode .add-row button {
+      background-color: #333;
+      color: #fff;
+    }
+    #columns {
       display: flex;
       gap: 8px;
     }
@@ -62,270 +93,233 @@
       gap: 8px;
     }
     .todo-btn {
-      padding: 0.6em 0.8em;
       border-radius: 6px;
       border: 1px solid;
-      line-height: 1.2;
-      cursor: grab;
       white-space: pre-wrap;
+      cursor: grab;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      text-align: center;
     }
-    .todo-btn.chosen,
-    .todo-btn.dragging {
-      background-color: #bbb !important;
+    .chosen, .dragging {
+      background-color: #888 !important;
     }
     #popupOverlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.3);
+      background: rgba(0, 0, 0, 0.5);
       display: none;
       align-items: center;
       justify-content: center;
-      z-index: 2000;
+      z-index: 999;
     }
     #popup {
       background: white;
-      padding: 20px;
+      padding: 16px;
       border-radius: 10px;
-      min-width: 240px;
+      min-width: 200px;
     }
-    #popup button, #popup textarea {
+    #popup button {
       display: block;
       width: 100%;
       margin: 6px 0;
       padding: 10px;
+      border-radius: 6px;
+      border: none;
     }
-    #admob {
+    #admob-placeholder {
       position: fixed;
       bottom: 0;
       left: 0;
       width: 100%;
       height: 60px;
-      text-align: center;
-      line-height: 60px;
+      background-color: #000;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       font-size: 14px;
-      z-index: 1000;
-    }
-    body.light-theme .container {
-      background-color: #f2f2f2;
-    }
-    body.dark-theme .container {
-      background-color: #121212;
-    }
-    body.light-theme .todo-btn {
-      background-color: #fff;
-      color: #333;
-      border-color: #ccc;
-    }
-    body.dark-theme .todo-btn {
-      background-color: #333;
-      color: #fff;
-      border-color: #666;
-    }
-    body.light-theme .top-buttons button {
-      background-color: #ccc;
-      color: #000;
-    }
-    body.dark-theme .top-buttons button {
-      background-color: #444;
-      color: white;
-    }
-    body.light-theme #admob {
-      background-color: #000;
-      color: white;
-    }
-    body.dark-theme #admob {
-      background-color: #000;
-      color: white;
+      z-index: 998;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="top-buttons">
-      <button id="settingsBtn" onclick="goToSettings()">⚙️ 설정</button>
-      <textarea id="newTodo" placeholder="새 할 일 입력" rows="2"></textarea>
-      <button onclick="addNewTodo()">➕ 추가</button>
+    <div class="top-bar">
+      <textarea id="todoInput" placeholder="할 일을 입력하세요"></textarea>
+      <button onclick="goToSettings()">⚙️ 설정</button>
     </div>
-    <div id="todoButtons"></div>
-    <div id="popupOverlay"><div id="popup"></div></div>
-    <div id="settingsPanel" class="hidden">
-      <button onclick="clearTodos()">모두 삭제</button>
-    </div>
+    <div id="addRow" class="add-row"></div>
+    <div id="columns"></div>
   </div>
-  <div id="admob">광고 자리</div>
+  <div id="popupOverlay"><div id="popup"></div></div>
+  <div id="admob-placeholder">광고 영역</div>
 
   <script>
-    let isDragging = false;
-    let dragStartTime = 0, dragStartX = 0, dragStartY = 0;
-
-    function startTracking(e) {
-      const point = e.touches ? e.touches[0] : e;
-      dragStartTime = Date.now();
-      dragStartX = point.clientX;
-      dragStartY = point.clientY;
-      isDragging = false;
+    function goToSettings() {
+      location.href = '/setting';
     }
 
-    function endTracking(e, text, colIndex, itemIndex) {
-      const point = e.changedTouches ? e.changedTouches[0] : e;
-      const elapsed = Date.now() - dragStartTime;
-      const dist = Math.hypot(point.clientX - dragStartX, point.clientY - dragStartY);
-      if (elapsed < 300 && dist < 5 && !isDragging) {
-        showPopup(text, colIndex, itemIndex);
-      }
+    function getColumnCount() {
+      return parseInt(localStorage.getItem('columnCount') || '1');
     }
 
-    function getColumns() {
-      return parseInt(localStorage.getItem('columnCount')) || 1;
+    function getTodos() {
+      return JSON.parse(localStorage.getItem('todoColumns') || '[]');
     }
 
-    function getTodoColumns() {
-      const stored = localStorage.getItem('todoColumns');
-      if (stored) return JSON.parse(stored);
-      const initial = [["안녕하세요", "미래를", "응원합니다"]];
-      localStorage.setItem("todoColumns", JSON.stringify(initial));
-      return initial;
+    function setTodos(data) {
+      localStorage.setItem('todoColumns', JSON.stringify(data));
     }
 
-    function setTodoColumns(columns) {
-      localStorage.setItem('todoColumns', JSON.stringify(columns));
+    function getSettings() {
+      return {
+        fontSize: parseInt(localStorage.getItem('fontSize') || '3'),
+        textAlign: localStorage.getItem('textAlign') || 'center',
+        buttonSize: parseInt(localStorage.getItem('buttonSize') || '3'),
+        theme: localStorage.getItem('theme') || 'light',
+      };
     }
 
-    function addNewTodo() {
-      const input = document.getElementById("newTodo");
-      const value = input.value.trim();
-      if (!value) return;
-      const columns = getTodoColumns();
-      columns[0].push(value);
-      setTodoColumns(columns);
-      input.value = "";
-      renderTodos();
+    function applyTheme(theme) {
+      document.body.classList.remove('light-mode', 'dark-mode');
+      document.body.classList.add(theme === 'dark' ? 'dark-mode' : 'light-mode');
     }
 
-    function clearTodos() {
-      localStorage.removeItem("todoColumns");
-      renderTodos();
-    }
-
-    function showPopup(text, colIndex, itemIndex) {
-      const popup = document.getElementById("popup");
-      const overlay = document.getElementById("popupOverlay");
+    function showPopup(colIndex, itemIndex, text) {
+      const popup = document.getElementById('popup');
+      const overlay = document.getElementById('popupOverlay');
       popup.innerHTML = `
         <div style="margin-bottom: 1em; white-space: pre-wrap;">${text}</div>
-        <button onclick="startEdit(${colIndex}, ${itemIndex})">✏️ 수정</button>
-        <button onclick="deleteTodo(${colIndex}, ${itemIndex})">🗑 삭제</button>
+        <button onclick="editItem(${colIndex}, ${itemIndex})">✏️ 수정</button>
+        <button onclick="deleteItem(${colIndex}, ${itemIndex})">🗑 삭제</button>
         <button onclick="closePopup()">❌ 취소</button>
       `;
       overlay.style.display = 'flex';
     }
 
-    function startEdit(colIndex, itemIndex) {
-      const columns = getTodoColumns();
-      const popup = document.getElementById("popup");
-      const value = columns[colIndex][itemIndex];
+    function closePopup() {
+      document.getElementById('popupOverlay').style.display = 'none';
+    }
+
+    function editItem(colIndex, itemIndex) {
+      const todos = getTodos();
+      const popup = document.getElementById('popup');
+      const original = todos[colIndex][itemIndex];
       popup.innerHTML = `
-        <textarea id="editTextarea" rows="3">${value}</textarea>
-        <button onclick="saveEdit(${colIndex}, ${itemIndex})">확인</button>
+        <textarea id="editInput" rows="3">${original}</textarea>
+        <button onclick="confirmEdit(${colIndex}, ${itemIndex})">확인</button>
         <button onclick="closePopup()">취소</button>
       `;
     }
 
-    function saveEdit(colIndex, itemIndex) {
-      const textarea = document.getElementById("editTextarea");
-      const value = textarea.value.trim();
+    function confirmEdit(colIndex, itemIndex) {
+      const value = document.getElementById('editInput').value.trim();
       if (!value) return;
-      const columns = getTodoColumns();
-      columns[colIndex][itemIndex] = value;
-      setTodoColumns(columns);
+      const todos = getTodos();
+      todos[colIndex][itemIndex] = value;
+      setTodos(todos);
       closePopup();
-      renderTodos();
+      render();
     }
 
-    function closePopup() {
-      document.getElementById("popupOverlay").style.display = 'none';
-    }
-
-    function deleteTodo(colIndex, itemIndex) {
-      const columns = getTodoColumns();
-      columns[colIndex].splice(itemIndex, 1);
-      setTodoColumns(columns);
+    function deleteItem(colIndex, itemIndex) {
+      const todos = getTodos();
+      todos[colIndex].splice(itemIndex, 1);
+      setTodos(todos);
       closePopup();
-      renderTodos();
+      render();
     }
 
-    function renderTodos() {
-      const container = document.getElementById("todoButtons");
-      const columns = getTodoColumns();
-      const colCount = getColumns();
+    function render() {
+      const colCount = getColumnCount();
+      const settings = getSettings();
+      applyTheme(settings.theme);
 
-      const fontSize = parseInt(localStorage.getItem('fontSize')) || 3;
-      const textAlign = localStorage.getItem('textAlign') || 'center';
-      const remSize = 0.8 + fontSize * 0.2;
+      let data = getTodos();
 
-      while (columns.length < colCount) columns.push([]);
-      while (columns.length > colCount) {
-        const moved = columns.pop();
-        columns[0].push(...moved);
-      }
+      while (data.length < colCount) data.push([]);
+      setTodos(data);
 
-      setTodoColumns(columns);
-      container.innerHTML = "";
+      const columnsEl = document.getElementById('columns');
+      const addRowEl = document.getElementById('addRow');
+      columnsEl.innerHTML = '';
+      addRowEl.innerHTML = '';
+
+      const fontSizeRem = 0.8 + settings.fontSize * 0.2;
+      const buttonHeight = settings.buttonSize * 12 + 28 + 'px';
 
       for (let i = 0; i < colCount; i++) {
-        const colDiv = document.createElement("div");
-        colDiv.className = "column";
-        colDiv.dataset.index = i;
+        const btn = document.createElement('button');
+        btn.textContent = '+추가';
+        btn.onclick = () => addTodo(i);
+        btn.style.display = 'flex';
+        btn.style.alignItems = 'center';
+        btn.style.justifyContent = 'center';
+        addRowEl.appendChild(btn);
 
-        columns[i].forEach((todo, j) => {
-          const btn = document.createElement("button");
-          btn.className = "todo-btn";
-          btn.textContent = todo;
+        const col = document.createElement('div');
+        col.className = 'column';
+        col.dataset.index = i;
 
-          btn.style.fontSize = remSize + "rem";     // ✅ 글자 크기 적용
-          btn.style.textAlign = textAlign;          // ✅ 정렬 적용
-
-          btn.addEventListener('mousedown', startTracking);
-          btn.addEventListener('mouseup', e => endTracking(e, todo, i, j));
-          btn.addEventListener('touchstart', startTracking);
-          btn.addEventListener('touchend', e => endTracking(e, todo, i, j));
-
-          colDiv.appendChild(btn);
+        data[i].forEach((todo, j) => {
+          const el = document.createElement('div');
+          el.className = 'todo-btn';
+          el.textContent = todo;
+          el.style.fontSize = fontSizeRem + 'rem';
+          el.style.height = buttonHeight;
+          el.style.textAlign = settings.textAlign;
+          el.addEventListener('click', () => showPopup(i, j, todo));
+          col.appendChild(el);
         });
 
-        container.appendChild(colDiv);
-      }
+        columnsEl.appendChild(col);
 
-      Array.from(container.children).forEach((colDiv, i) => {
-        Sortable.create(colDiv, {
-          group: 'todo-columns',
+        Sortable.create(col, {
+          group: 'shared',
           animation: 150,
-          delay: 300,
-          delayOnTouchOnly: true,
-          ghostClass: 'dragging',
-          chosenClass: 'chosen',
-          onStart: () => isDragging = true,
-          onEnd: () => {
-            const newColumns = Array.from(container.children).map(col =>
-              Array.from(col.querySelectorAll('.todo-btn')).map(btn => btn.textContent)
-            );
-            setTodoColumns(newColumns);
+          onAdd: function (evt) {
+            const from = evt.from.dataset.index;
+            const to = evt.to.dataset.index;
+            const movedItem = evt.item.textContent;
+            let todos = getTodos();
+            const index = todos[from].indexOf(movedItem);
+            if (index > -1) todos[from].splice(index, 1);
+            todos[to].splice(evt.newIndex, 0, movedItem);
+            setTodos(todos);
+            render();
+          },
+          onUpdate: function () {
+            let newData = [];
+            for (const col of columnsEl.children) {
+              const items = Array.from(col.children).map(x => x.textContent);
+              newData.push(items);
+            }
+            setTodos(newData);
           }
         });
-      });
+      }
     }
 
-    function goToSettings() {
-      window.location.href = '/setting';
+    function addTodo(colIndex) {
+      const value = document.getElementById('todoInput').value.trim();
+      let todos = getTodos();
+      todos[colIndex].push(value);
+      setTodos(todos);
+      document.getElementById('todoInput').value = '';
+      render();
     }
 
-    function applySettings() {
-      const theme = localStorage.getItem('theme') || 'light';
-      document.body.classList.remove('light-theme', 'dark-theme');
-      document.body.classList.add(theme + '-theme');
+    if (!localStorage.getItem('todoColumns')) {
+      localStorage.setItem('todoColumns', JSON.stringify([['안녕하세요']]));
+    }
+    if (!localStorage.getItem('columnCount')) {
+      localStorage.setItem('columnCount', '1');
     }
 
-    applySettings();
-    renderTodos();
+    render();
   </script>
 </body>
 </html>
