@@ -117,7 +117,8 @@
       align-items: center;
       justify-content: center;
       overflow: auto;
-      z-index: 9999;
+      z-index: 99999;
+      pointer-events: all;
     }
     #popup {
       background: white;
@@ -145,7 +146,7 @@
       align-items: center;
       justify-content: center;
       font-size: 14px;
-      z-index: 998;
+      z-index: 10;
     }
   </style>
 </head>
@@ -194,7 +195,6 @@
 
     function showPopup(colIndex, itemIndex, text) {
       console.log('showPopup 실행됨:', colIndex, itemIndex);
-
       const popup = document.getElementById('popup');
       const overlay = document.getElementById('popupOverlay');
 
@@ -204,19 +204,7 @@
         <button onclick="deleteItem(${colIndex}, ${itemIndex})">🗑 삭제</button>
         <button onclick="closePopup()">❌ 취소</button>
       `;
-
-      // 강제 적용 (모바일/PWA 호환)
       overlay.style.display = 'flex';
-      overlay.style.width = '100vw';
-      overlay.style.height = '100vh';
-      overlay.style.overflow = 'auto';
-      overlay.style.position = 'fixed';
-      overlay.style.top = '0';
-      overlay.style.left = '0';
-      overlay.style.alignItems = 'center';
-      overlay.style.justifyContent = 'center';
-      overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
-      overlay.style.zIndex = '9999';
     }
 
     function closePopup() {
@@ -332,7 +320,7 @@
     }
 
     if (!localStorage.getItem('todoColumns')) {
-      localStorage.setItem('todoColumns', JSON.stringify([['안녕하세요']])); 
+      localStorage.setItem('todoColumns', JSON.stringify([['안녕하세요']]));
     }
     if (!localStorage.getItem('columnCount')) {
       localStorage.setItem('columnCount', '1');
