@@ -13,7 +13,7 @@
       padding: 0;
       height: 100%;
       font-family: 'Segoe UI', sans-serif;
-      position: relative; /* 추가 */
+      position: relative;
     }
     body.dark-mode {
       background-color: #121212;
@@ -111,7 +111,7 @@
       transform: scale(0.95);
     }
     #popupOverlay {
-      position: absolute; /* 변경됨 */
+      position: fixed;
       top: 0;
       left: 0;
       width: 100%;
@@ -121,7 +121,7 @@
       align-items: center;
       justify-content: center;
       overflow: auto;
-      z-index: 9999; /* 유지 또는 조정 */
+      z-index: 9999;
     }
     #popup {
       background: white;
@@ -166,6 +166,8 @@
   <div id="admob-placeholder">광고 영역</div>
 
   <script>
+    let popupOpen = false;
+
     function goToSettings() {
       location.href = '/setting';
     }
@@ -197,6 +199,7 @@
     }
 
     function showPopup(colIndex, itemIndex, text) {
+      popupOpen = true;
       const popup = document.getElementById('popup');
       const overlay = document.getElementById('popupOverlay');
       popup.innerHTML = `
@@ -209,6 +212,7 @@
     }
 
     function closePopup() {
+      popupOpen = false;
       document.getElementById('popupOverlay').style.display = 'none';
     }
 
@@ -258,6 +262,10 @@
           ghostClass: 'dragging',
           fallbackOnBody: true,
           forceFallback: true,
+          delay: 150,
+          delayOnTouchOnly: true,
+          touchStartThreshold: 5,
+          onStart: () => popupOpen = false,
           onAdd: function (evt) {
             const from = evt.from.dataset.index;
             const to = evt.to.dataset.index;
@@ -315,7 +323,12 @@
           el.style.height = buttonHeight;
           el.style.textAlign = settings.textAlign;
 
-          el.onclick = () => showPopup(i, j, todo);
+          el.onclick = (e) => {
+            if (!popupOpen) {
+              e.stopPropagation();
+              showPopup(i, j, todo);
+            }
+          };
           col.appendChild(el);
         });
 
