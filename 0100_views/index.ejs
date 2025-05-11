@@ -13,7 +13,6 @@
       padding: 0;
       height: 100%;
       font-family: 'Segoe UI', sans-serif;
-      transition: background-color 0.3s, color 0.3s;
     }
     body.dark-mode {
       background-color: #121212;
@@ -102,9 +101,13 @@
       justify-content: center;
       overflow: hidden;
       text-align: center;
+      touch-action: none;
+      user-select: none;
     }
-    .chosen, .dragging {
+    .dragging {
       background-color: #888 !important;
+      opacity: 0.5;
+      transform: scale(0.95);
     }
     #popupOverlay {
       position: fixed;
@@ -118,7 +121,6 @@
       justify-content: center;
       overflow: auto;
       z-index: 99999;
-      pointer-events: all;
     }
     #popup {
       background: white;
@@ -222,7 +224,6 @@
 
     function confirmEdit(colIndex, itemIndex) {
       const value = document.getElementById('editInput').value.trim();
-      if (!value) return;
       const todos = getTodos();
       todos[colIndex][itemIndex] = value;
       setTodos(todos);
@@ -238,8 +239,48 @@
       render();
     }
 
+    function addTodo(colIndex) {
+      const value = document.getElementById('todoInput').value.trim();
+      // if (!value) return;
+      let todos = getTodos();
+      todos[colIndex].push(value);
+      setTodos(todos);
+      document.getElementById('todoInput').value = '';
+      render();
+    }
+
+    function initSortable() {
+      const columnsEl = document.getElementById('columns');
+      for (const col of columnsEl.children) {
+        Sortable.create(col, {
+          group: 'shared',
+          animation: 150,
+          ghostClass: 'dragging',
+          fallbackOnBody: true,
+          forceFallback: true,
+          onAdd: function (evt) {
+            const from = evt.from.dataset.index;
+            const to = evt.to.dataset.index;
+            const movedItem = evt.item.textContent;
+            let todos = getTodos();
+            const index = todos[from].indexOf(movedItem);
+            if (index > -1) todos[from].splice(index, 1);
+            todos[to].splice(evt.newIndex, 0, movedItem);
+            setTodos(todos);
+          },
+          onUpdate: function () {
+            let newData = [];
+            for (const col of columnsEl.children) {
+              const items = Array.from(col.children).map(x => x.textContent);
+              newData.push(items);
+            }
+            setTodos(newData);
+          }
+        });
+      }
+    }
+
     function render() {
-      console.log('🔄 render() 호출됨');
       const colCount = getColumnCount();
       const settings = getSettings();
       applyTheme(settings.theme);
@@ -260,9 +301,6 @@
         const btn = document.createElement('button');
         btn.textContent = '+추가';
         btn.onclick = () => addTodo(i);
-        btn.style.display = 'flex';
-        btn.style.alignItems = 'center';
-        btn.style.justifyContent = 'center';
         addRowEl.appendChild(btn);
 
         const col = document.createElement('div');
@@ -277,67 +315,14 @@
           el.style.height = buttonHeight;
           el.style.textAlign = settings.textAlign;
 
-          let startX = 0, startY = 0;
-
-          el.addEventListener('touchstart', e => {
-            if (e.touches.length > 0) {
-              startX = e.touches[0].clientX;
-              startY = e.touches[0].clientY;
-            }
-          });
-
-          el.addEventListener('touchend', e => {
-            const dx = Math.abs(e.changedTouches[0].clientX - startX);
-            const dy = Math.abs(e.changedTouches[0].clientY - startY);
-            if (dx < 10 && dy < 10) showPopup(i, j, todo);
-          });
-
-          el.addEventListener('click', () => {
-            showPopup(i, j, todo);
-          });
-
+          el.onclick = () => showPopup(i, j, todo);
           col.appendChild(el);
         });
 
         columnsEl.appendChild(col);
-
-        Sortable.create(col, {
-          group: 'shared',
-          animation: 0,
-          ghostClass: 'dragging',
-          fallbackOnBody: true,
-          forceFallback: true,
-          onAdd: function (evt) {
-            const from = evt.from.dataset.index;
-            const to = evt.to.dataset.index;
-            const movedItem = evt.item.textContent;
-            let todos = getTodos();
-            const index = todos[from].indexOf(movedItem);
-            if (index > -1) todos[from].splice(index, 1);
-            todos[to].splice(evt.newIndex, 0, movedItem);
-            setTodos(todos);
-            setTimeout(() => render(), 100);
-          },
-          onUpdate: function () {
-            let newData = [];
-            for (const col of columnsEl.children) {
-              const items = Array.from(col.children).map(x => x.textContent);
-              newData.push(items);
-            }
-            setTodos(newData);
-            setTimeout(() => render(), 100);
-          }
-        });
       }
-    }
 
-    function addTodo(colIndex) {
-      const value = document.getElementById('todoInput').value;
-      let todos = getTodos();
-      todos[colIndex].push(value);
-      setTodos(todos);
-      document.getElementById('todoInput').value = '';
-      render();
+      initSortable();
     }
 
     if (!localStorage.getItem('todoColumns')) {
