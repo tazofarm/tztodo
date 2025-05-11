@@ -323,6 +323,14 @@
           el.style.height = buttonHeight;
           el.style.textAlign = settings.textAlign;
 
+          el.ontouchstart = () => {
+            popupTimer = setTimeout(() => {
+              showPopup(i, j, todo);
+            }, 100);
+          };
+          el.ontouchend = () => {
+            clearTimeout(popupTimer);
+          };
           el.onclick = () => showPopup(i, j, todo);
 
           col.appendChild(el);
