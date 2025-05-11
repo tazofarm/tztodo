@@ -110,12 +110,13 @@
       position: fixed;
       top: 0;
       left: 0;
-      right: 0;
-      bottom: 0;
+      width: 100vw;
+      height: 100vh;
       background: rgba(0, 0, 0, 0.5);
       display: none;
       align-items: center;
       justify-content: center;
+      overflow: auto;
       z-index: 9999;
     }
     #popup {
@@ -204,13 +205,14 @@
         <button onclick="closePopup()">❌ 취소</button>
       `;
 
-      // 강제로 보이게 처리 (모바일 호환)
+      // 강제 적용 (모바일/PWA 호환)
       overlay.style.display = 'flex';
+      overlay.style.width = '100vw';
+      overlay.style.height = '100vh';
+      overlay.style.overflow = 'auto';
       overlay.style.position = 'fixed';
       overlay.style.top = '0';
       overlay.style.left = '0';
-      overlay.style.right = '0';
-      overlay.style.bottom = '0';
       overlay.style.alignItems = 'center';
       overlay.style.justifyContent = 'center';
       overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
@@ -256,7 +258,6 @@
       applyTheme(settings.theme);
 
       let data = getTodos();
-
       while (data.length < colCount) data.push([]);
       setTodos(data);
 
@@ -322,6 +323,7 @@
 
     function addTodo(colIndex) {
       const value = document.getElementById('todoInput').value.trim();
+      if (!value) return;
       let todos = getTodos();
       todos[colIndex].push(value);
       setTodos(todos);
