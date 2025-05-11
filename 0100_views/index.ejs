@@ -108,12 +108,15 @@
     }
     #popupOverlay {
       position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
       background: rgba(0, 0, 0, 0.5);
       display: none;
       align-items: center;
       justify-content: center;
-      z-index: 999;
+      z-index: 9999;
     }
     #popup {
       background: white;
@@ -189,15 +192,29 @@
     }
 
     function showPopup(colIndex, itemIndex, text) {
+      console.log('showPopup 실행됨:', colIndex, itemIndex);
+
       const popup = document.getElementById('popup');
       const overlay = document.getElementById('popupOverlay');
+
       popup.innerHTML = `
         <div style="margin-bottom: 1em; white-space: pre-wrap;">${text}</div>
         <button onclick="editItem(${colIndex}, ${itemIndex})">✏️ 수정</button>
         <button onclick="deleteItem(${colIndex}, ${itemIndex})">🗑 삭제</button>
         <button onclick="closePopup()">❌ 취소</button>
       `;
+
+      // 강제로 보이게 처리 (모바일 호환)
       overlay.style.display = 'flex';
+      overlay.style.position = 'fixed';
+      overlay.style.top = '0';
+      overlay.style.left = '0';
+      overlay.style.right = '0';
+      overlay.style.bottom = '0';
+      overlay.style.alignItems = 'center';
+      overlay.style.justifyContent = 'center';
+      overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+      overlay.style.zIndex = '9999';
     }
 
     function closePopup() {
@@ -313,7 +330,7 @@
     }
 
     if (!localStorage.getItem('todoColumns')) {
-      localStorage.setItem('todoColumns', JSON.stringify([['안녕하세요']]));
+      localStorage.setItem('todoColumns', JSON.stringify([['안녕하세요']])); 
     }
     if (!localStorage.getItem('columnCount')) {
       localStorage.setItem('columnCount', '1');
