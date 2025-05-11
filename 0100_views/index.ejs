@@ -278,6 +278,7 @@
           el.style.height = buttonHeight;
           el.style.textAlign = settings.textAlign;
           el.addEventListener('click', () => showPopup(i, j, todo));
+          el.addEventListener('touchend', () => showPopup(i, j, todo));
           col.appendChild(el);
         });
 
