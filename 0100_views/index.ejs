@@ -194,10 +194,8 @@
     }
 
     function showPopup(colIndex, itemIndex, text) {
-      console.log('showPopup 실행됨:', colIndex, itemIndex);
       const popup = document.getElementById('popup');
       const overlay = document.getElementById('popupOverlay');
-
       popup.innerHTML = `
         <div style="margin-bottom: 1em; white-space: pre-wrap;">${text}</div>
         <button onclick="editItem(${colIndex}, ${itemIndex})">✏️ 수정</button>
@@ -241,6 +239,7 @@
     }
 
     function render() {
+      console.log('🔄 render() 호출됨');
       const colCount = getColumnCount();
       const settings = getSettings();
       applyTheme(settings.theme);
@@ -277,8 +276,26 @@
           el.style.fontSize = fontSizeRem + 'rem';
           el.style.height = buttonHeight;
           el.style.textAlign = settings.textAlign;
-          el.addEventListener('click', () => showPopup(i, j, todo));
-          el.addEventListener('touchend', () => showPopup(i, j, todo));
+
+          let startX = 0, startY = 0;
+
+          el.addEventListener('touchstart', e => {
+            if (e.touches.length > 0) {
+              startX = e.touches[0].clientX;
+              startY = e.touches[0].clientY;
+            }
+          });
+
+          el.addEventListener('touchend', e => {
+            const dx = Math.abs(e.changedTouches[0].clientX - startX);
+            const dy = Math.abs(e.changedTouches[0].clientY - startY);
+            if (dx < 10 && dy < 10) showPopup(i, j, todo);
+          });
+
+          el.addEventListener('click', () => {
+            showPopup(i, j, todo);
+          });
+
           col.appendChild(el);
         });
 
@@ -305,16 +322,16 @@
               newData.push(items);
             }
             setTodos(newData);
+            render();
           }
         });
       }
     }
 
     function addTodo(colIndex) {
-      const value = document.getElementById('todoInput').value.trim();
-      if (!value) return;
+      const value = document.getElementById('todoInput').value;
       let todos = getTodos();
-      todos[colIndex].push(value);
+      todos[colIndex].push(value); // 빈 문자열도 허용
       setTodos(todos);
       document.getElementById('todoInput').value = '';
       render();
@@ -327,6 +344,7 @@
       localStorage.setItem('columnCount', '1');
     }
 
+    window.addEventListener('focus', render);
     render();
   </script>
 </body>
