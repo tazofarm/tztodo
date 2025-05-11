@@ -303,7 +303,10 @@
 
         Sortable.create(col, {
           group: 'shared',
-          animation: 150,
+          animation: 0,
+          ghostClass: 'dragging',
+          fallbackOnBody: true,
+          forceFallback: true,
           onAdd: function (evt) {
             const from = evt.from.dataset.index;
             const to = evt.to.dataset.index;
@@ -313,7 +316,7 @@
             if (index > -1) todos[from].splice(index, 1);
             todos[to].splice(evt.newIndex, 0, movedItem);
             setTodos(todos);
-            render();
+            setTimeout(() => render(), 100);
           },
           onUpdate: function () {
             let newData = [];
@@ -322,7 +325,7 @@
               newData.push(items);
             }
             setTodos(newData);
-            render();
+            setTimeout(() => render(), 100);
           }
         });
       }
@@ -331,7 +334,7 @@
     function addTodo(colIndex) {
       const value = document.getElementById('todoInput').value;
       let todos = getTodos();
-      todos[colIndex].push(value); // 빈 문자열도 허용
+      todos[colIndex].push(value);
       setTodos(todos);
       document.getElementById('todoInput').value = '';
       render();
