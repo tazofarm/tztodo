@@ -167,6 +167,7 @@
 
   <script>
     let popupOpen = false;
+    let popupTimer;
 
     function goToSettings() {
       location.href = '/setting';
@@ -262,10 +263,7 @@
           ghostClass: 'dragging',
           fallbackOnBody: true,
           forceFallback: true,
-          delay: 150,
-          delayOnTouchOnly: true,
-          touchStartThreshold: 5,
-          onStart: () => popupOpen = false,
+          delay: 0,
           onAdd: function (evt) {
             const from = evt.from.dataset.index;
             const to = evt.to.dataset.index;
@@ -323,12 +321,22 @@
           el.style.height = buttonHeight;
           el.style.textAlign = settings.textAlign;
 
+          el.ontouchstart = () => {
+            popupTimer = setTimeout(() => {
+              showPopup(i, j, todo);
+            }, 600);
+          };
+          el.ontouchend = () => {
+            clearTimeout(popupTimer);
+          };
+
           el.onclick = (e) => {
             if (!popupOpen) {
               e.stopPropagation();
-              showPopup(i, j, todo);
+              // 빠르게 탭하면 이동만 수행되고 팝업은 뜨지 않음
             }
           };
+
           col.appendChild(el);
         });
 
