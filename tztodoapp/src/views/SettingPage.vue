@@ -51,19 +51,8 @@
           </div>
         </div>
 
-        <!-- 글자 정렬 -->
-        <div class="setting-section">
-          <label>글자 정렬</label>
-          <div class="radio-group">
-            <label><input type="radio" value="left" v-model="textAlign" /> 왼쪽</label>
-            <label><input type="radio" value="center" v-model="textAlign" /> 가운데</label>
-            <label><input type="radio" value="right" v-model="textAlign" /> 오른쪽</label>
-          </div>
-        </div>
-
         <div style="margin-top: 20px;">
-          <ion-button expand="block" @click="saveSettings">적용</ion-button>
-          
+          <ion-button expand="block" @click="saveSettings" class="gray-button">적용</ion-button>
         </div>
       </div>
     </ion-content>
@@ -88,7 +77,6 @@ const router = useRouter();
 const theme = ref('light');
 const columnCount = ref('3');
 const fontSize = ref('2');
-const textAlign = ref('center');
 const buttonSize = ref('3');
 
 function initSetting(key: string, defaultValue: string) {
@@ -102,45 +90,57 @@ onMounted(() => {
   theme.value = initSetting('theme', 'light');
   columnCount.value = initSetting('columnCount', '3');
   fontSize.value = initSetting('fontSize', '2');
-  textAlign.value = initSetting('textAlign', 'center');
   buttonSize.value = initSetting('buttonSize', '3');
 });
-
 
 function saveSettings() {
   localStorage.setItem('theme', theme.value);
   localStorage.setItem('columnCount', columnCount.value);
   localStorage.setItem('fontSize', fontSize.value);
-  localStorage.setItem('textAlign', textAlign.value);
   localStorage.setItem('buttonSize', buttonSize.value);
 
-  window.location.href = '/home';  // 이 방식은 완전한 페이지 재로드를 유도
+  window.location.href = '/home';
 }
-
 </script>
 
 <style scoped>
+:deep(body.dark-mode),
+:deep(body.dark-mode) .container {
+  background-color: #1e1e1e !important;
+}
+
 .container {
   padding: 16px;
 }
+
 .radio-group {
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
   margin-top: 5px;
 }
+
 .radio-group label {
   white-space: nowrap;
+  color: #000;
 }
+
 .setting-section {
   background-color: #e0e0e0;
   padding: 12px;
   border-radius: 8px;
   margin-top: 15px;
 }
+
 .setting-section label:first-child {
   font-weight: bold;
   display: block;
   margin-bottom: 4px;
+  color: #000;
+}
+
+.gray-button {
+  --background: #ccc;
+  --color: #000;
 }
 </style>

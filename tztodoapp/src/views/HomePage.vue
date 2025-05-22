@@ -6,7 +6,7 @@
       </ion-toolbar>
     </ion-header>
 
-    <ion-content :fullscreen="true">
+    <ion-content :fullscreen="false">
       <div class="container">
         <div class="top-bar">
           <textarea v-model="inputText" placeholder="할 일을 입력하세요" />
@@ -63,10 +63,12 @@ import {
   IonContent
 } from '@ionic/vue';
 
-import { ref, onMounted, computed } from 'vue';
+
 import Sortable from 'sortablejs';
 import { useRouter } from 'vue-router';
 import PopupModal from '@/components/PopupModal.vue';
+import { App } from '@capacitor/app';
+import { onMounted, onUnmounted, ref, computed } from 'vue'; // ref도 여기 있음
 
 
 const router = useRouter();
@@ -199,15 +201,51 @@ function initSortable() {
   }
 }
 
-onMounted(() => {
+function backHandler() {
+  console.log('Current route:', router.currentRoute.value.fullPath);
+
+  if (popupOpen.value) {
+    popupOpen.value = false;
+  } else if (router.currentRoute.value.fullPath !== '/') {
+    router.back();
+  } else {
+    App.exitApp();
+  }
+}
+
+
+
+
+
+let backListener;
+
+onMounted(async () => {
   if (!localStorage.getItem('todoColumns')) {
     localStorage.setItem('todoColumns', JSON.stringify([['안녕하세요']]));
   }
   if (!localStorage.getItem('columnCount')) {
     localStorage.setItem('columnCount', '1');
   }
+
   render();
   window.addEventListener('focus', render);
+
+  // ✅ 리스너 등록은 이곳만
+  backListener = await App.addListener('backButton', backHandler);
+});
+
+
+
+
+
+
+
+
+
+
+
+onUnmounted(() => {
+  backListener?.remove();
 });
 
 // -------- 동적 스타일 --------
@@ -246,6 +284,7 @@ const todoBoxStyle = computed(() => {
   padding: 16px;
   height: calc(100vh - 120px); /* 헤더+광고 영역 제외 */
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch; /* ✅ 추가 */
   box-sizing: border-box;
 }
 .top-bar {
@@ -295,9 +334,10 @@ const todoBoxStyle = computed(() => {
   white-space: pre-wrap;
   overflow: hidden;
   user-select: none;
-  touch-action: none;
-  height: [고정 높이]; /* 선택 사항: 직접 주거나 그대로 유지 */
+  touch-action: auto;
+
 }
+
 .dragging {
   background-color: #888 !important;
   opacity: 0.5;
@@ -393,8 +433,7 @@ body.dark-mode .add-row button {
 }
 
 ion-toolbar {
-  padding-top: 20px; /* 원하는 여백 크기 설정 */
-  padding-bottom: 0px; /* 하단 여백도 줄 수 있음 */
+  padding-top: env(safe-area-inset-top, 24px); /* iOS, Android 모두 고려 */
 }
 
 </style>
