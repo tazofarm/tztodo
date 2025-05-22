@@ -138,14 +138,11 @@ function handleDelete() {
 
 function addTodo(colIndex) {
   let value = inputText.value.trim();
+  if (!value) value = '(비어 있음)';
 
-  if (!value) {
-    value = '(비어 있음)'; // 👈 빈 값이면 기본값으로 대체
-  }
-
-  const todos = getTodos();
+  const todos = [...columns.value]; // ✅ 화면상 최신 정렬 상태 사용
   todos[colIndex].push(value);
-  setTodos(todos);
+  setTodos(todos); // ✅ 이 상태를 저장
   inputText.value = '';
   render();
 }
@@ -247,6 +244,9 @@ const todoBoxStyle = computed(() => {
 <style scoped>
 .container {
   padding: 16px;
+  height: calc(100vh - 120px); /* 헤더+광고 영역 제외 */
+  overflow-y: auto;
+  box-sizing: border-box;
 }
 .top-bar {
   display: grid;
@@ -392,6 +392,9 @@ body.dark-mode .add-row button {
   border: 2px solid #888888; /* 밝은 회색 윤곽선 */
 }
 
-
+ion-toolbar {
+  padding-top: 20px; /* 원하는 여백 크기 설정 */
+  padding-bottom: 0px; /* 하단 여백도 줄 수 있음 */
+}
 
 </style>
