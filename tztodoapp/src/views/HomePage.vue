@@ -202,11 +202,12 @@ function initSortable() {
 }
 
 function backHandler() {
-  console.log('Current route:', router.currentRoute.value.fullPath);
+  const path = router.currentRoute.value.path;
+  console.log('Current path:', path);
 
   if (popupOpen.value) {
     popupOpen.value = false;
-  } else if (router.currentRoute.value.fullPath !== '/') {
+  } else if (path !== '/home') {
     router.back();
   } else {
     App.exitApp();
@@ -435,5 +436,17 @@ body.dark-mode .add-row button {
 ion-toolbar {
   padding-top: env(safe-area-inset-top, 24px); /* iOS, Android 모두 고려 */
 }
+
+ion-header ion-toolbar {
+  padding-top: env(safe-area-inset-top, 20px);
+  min-height: 64px;
+  box-sizing: border-box;
+}
+
+ion-title {
+  text-align: center;
+  margin-top: 4px;
+}
+
 
 </style>
