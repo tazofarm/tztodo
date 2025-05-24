@@ -100,6 +100,7 @@ import {
   IonModal,
 } from '@ionic/vue';
 import { ref, computed, onMounted } from 'vue';
+import { Preferences } from '@capacitor/preferences';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
@@ -125,28 +126,31 @@ function selectColor(color: string) {
   showPalette.value = false;
 }
 
-function initSetting(key: string, defaultValue: string) {
-  if (!localStorage.getItem(key)) {
-    localStorage.setItem(key, defaultValue);
+async function initSetting(key: string, defaultValue: string): Promise<string> {
+  const { value } = await Preferences.get({ key });
+  if (value === null) {
+    await Preferences.set({ key, value: defaultValue });
+    return defaultValue;
   }
-  return localStorage.getItem(key) as string;
+  return value;
 }
 
-onMounted(() => {
-  theme.value = initSetting('theme', 'light');
-  columnCount.value = initSetting('columnCount', '3');
-  fontSize.value = initSetting('fontSize', '2');
-  buttonSize.value = initSetting('buttonSize', '3');
-  customColor.value = initSetting('customColor', '#fce4ec');
+onMounted(async () => {
+  theme.value = await initSetting('theme', 'light');
+  columnCount.value = await initSetting('columnCount', '3');
+  fontSize.value = await initSetting('fontSize', '2');
+  buttonSize.value = await initSetting('buttonSize', '3');
+  customColor.value = await initSetting('customColor', '#fce4ec');
 });
 
-function saveSettings() {
-  localStorage.setItem('theme', theme.value);
-  localStorage.setItem('columnCount', columnCount.value);
-  localStorage.setItem('fontSize', fontSize.value);
-  localStorage.setItem('buttonSize', buttonSize.value);
+
+async function saveSettings() {
+  await Preferences.set({ key: 'theme', value: theme.value });
+  await Preferences.set({ key: 'columnCount', value: columnCount.value });
+  await Preferences.set({ key: 'fontSize', value: fontSize.value });
+  await Preferences.set({ key: 'buttonSize', value: buttonSize.value });
   if (theme.value === 'custom') {
-    localStorage.setItem('customColor', customColor.value);
+    await Preferences.set({ key: 'customColor', value: customColor.value });
   }
   window.location.href = '/home';
 }

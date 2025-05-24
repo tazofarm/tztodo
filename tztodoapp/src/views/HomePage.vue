@@ -76,7 +76,9 @@ import Sortable from 'sortablejs';
 import { useRouter } from 'vue-router';
 import PopupModal from '@/components/PopupModal.vue';
 import { App } from '@capacitor/app';
-import { onMounted, onUnmounted, ref, computed } from 'vue'; // ref도 여기 있음
+import { onMounted, onUnmounted, ref, computed } from 'vue';
+import { Preferences } from '@capacitor/preferences';
+
 
 
 import { Capacitor } from '@capacitor/core';
@@ -101,7 +103,7 @@ const popupOpen = ref(false);
 const popupText = ref('');
 const selectedCol = ref(null);
 const selectedIndex = ref(null);
-const columns = ref([]);
+const columns = ref([[], [], []]); // 또는 초기엔 1개라도 빈 배열 넣기
 
 
 
@@ -111,29 +113,25 @@ const columns = ref([]);
 
 
 
-
-// -------- 로컬스토리지 유틸 --------
-function getColumnCount() {
-  return parseInt(localStorage.getItem('columnCount') || '1');
+async function getColumnCount() {
+  const { value } = await Preferences.get({ key: 'columnCount' });
+  const count = parseInt(value, 10);
+  return isNaN(count) ? 1 : count;
 }
-
-function getTodos() {
-  return JSON.parse(localStorage.getItem('todoColumns') || '[]');
+async function getTodos() {
+  const { value } = await Preferences.get({ key: 'todoColumns' });
+  return JSON.parse(value || '[]');
 }
-
-function setTodos(data) {
-  localStorage.setItem('todoColumns', JSON.stringify(data));
+async function setTodos(data) {
+  await Preferences.set({ key: 'todoColumns', value: JSON.stringify(data) });
 }
-
-function getSettings() {
-  return {
-    fontSize: parseInt(localStorage.getItem('fontSize') || '3'),
-    textAlign: localStorage.getItem('textAlign') || 'center',
-    buttonSize: parseInt(localStorage.getItem('buttonSize') || '3'),
-    theme: localStorage.getItem('theme') || 'light',
-  };
+async function getSettings() {
+  const fontSize = parseInt((await Preferences.get({ key: 'fontSize' })).value || '3');
+  const textAlign = (await Preferences.get({ key: 'textAlign' })).value || 'center';
+  const buttonSize = parseInt((await Preferences.get({ key: 'buttonSize' })).value || '3');
+  const theme = (await Preferences.get({ key: 'theme' })).value || 'light';
+  return { fontSize, textAlign, buttonSize, theme };
 }
-
 
 function goToSettings() {
   router.push('/setting');
@@ -146,47 +144,45 @@ function showPopup(colIndex, todoIndex, text) {
   popupOpen.value = true;
 }
 
-function handleEdit(newText) {
-  const todos = getTodos();
+async function handleEdit(newText) {
+  const todos = await getTodos();
   todos[selectedCol.value][selectedIndex.value] = newText;
   setTodos(todos);
   popupOpen.value = false;
   render();
 }
 
-function handleDelete() {
-  const todos = getTodos();
+async function handleDelete() {
+  const todos = await getTodos();
   todos[selectedCol.value].splice(selectedIndex.value, 1);
-  setTodos(todos);
+  await setTodos(todos);
   popupOpen.value = false;
-  render();
+  await render();
 }
 
-function addTodo(colIndex) {
+async function addTodo(colIndex) {
   let value = inputText.value.trim();
   if (!value) value = '(비어 있음)';
 
-  const todos = [...columns.value]; // ✅ 화면상 최신 정렬 상태 사용
+  const todos = [...columns.value];
   todos[colIndex].push(value);
-  setTodos(todos); // ✅ 이 상태를 저장
+  await setTodos(todos);
   inputText.value = '';
-  render();
+  await render();
 }
 
-function render() {
-  const colCount = getColumnCount();
-  const settings = getSettings();
-  applyTheme(settings.theme);
+async function render() {
+  const colCount = await getColumnCount();
+  const settings = await getSettings();
+  await applyTheme(settings.theme);
 
-  let data = getTodos();
+  let data = await getTodos();
 
-  // 부족한 열은 추가
-  while (data.length < colCount) data.push([]);
+while (data.length < colCount) data.push([]);
+if (data.length > colCount) data = data.slice(0, colCount);
 
-  setTodos(data);
-
-  // ✅ 필요한 수 만큼만 보여주기 (전체는 보존)
-  columns.value = data.slice(0, colCount);
+  await setTodos(data);
+  columns.value = Array.from({ length: colCount }, (_, i) => data[i] || []);
 
   setTimeout(() => initSortable(), 0);
 }
@@ -203,24 +199,24 @@ function initSortable() {
       delay: 300,
       delayOnTouchOnly: true,
       touchStartThreshold: 5,
-      onAdd(evt) {
-        const from = evt.from.dataset.index;
-        const to = evt.to.dataset.index;
-        const movedItem = evt.item.textContent;
-        const todos = getTodos();
-        const index = todos[from].indexOf(movedItem);
-        if (index > -1) todos[from].splice(index, 1);
-        todos[to].splice(evt.newIndex, 0, movedItem);
-        setTodos(todos);
-      },
-      onUpdate() {
-        const newData = [];
-        for (const col of columnsEl.children) {
-          const items = Array.from(col.children).map((x) => x.textContent);
-          newData.push(items);
-        }
-        setTodos(newData);
-      },
+      onAdd: async (evt) => {
+  const from = evt.from.dataset.index;
+  const to = evt.to.dataset.index;
+  const movedItem = evt.item.textContent;
+  const todos = await getTodos();
+  const index = todos[from].indexOf(movedItem);
+  if (index > -1) todos[from].splice(index, 1);
+  todos[to].splice(evt.newIndex, 0, movedItem);
+  await setTodos(todos);
+},
+onUpdate: async () => {
+  const newData = [];
+  for (const col of columnsEl.children) {
+    const items = Array.from(col.children).map((x) => x.textContent);
+    newData.push(items);
+  }
+  await setTodos(newData);
+},
     });
   }
 }
@@ -254,20 +250,33 @@ const checkAndRequestOverlayPermission = async () => {
   }
 };
 
-onMounted(async () => {
-  if (!localStorage.getItem('todoColumns')) {
-    localStorage.setItem('todoColumns', JSON.stringify([['안녕하세요']])); 
-  }
-  if (!localStorage.getItem('columnCount')) {
-    localStorage.setItem('columnCount', '1');
-  }
 
-  render();
-  window.addEventListener('focus', render);
-  backListener = await App.addListener('backButton', backHandler);
+
+async function initializePreferences() {
+  const todos = await Preferences.get({ key: 'todoColumns' });
+if (!todos.value) {
+  const colCount = await getColumnCount();
+  const defaultCols = Array.from({ length: colCount }, () => []);
+  defaultCols[0].push('안녕하세요');
+  await Preferences.set({ key: 'todoColumns', value: JSON.stringify(defaultCols) });
+}
+
+  const col = await Preferences.get({ key: 'columnCount' });
+  if (!col.value) {
+    await Preferences.set({ key: 'columnCount', value: '1' });
+  }
+}
+
+onMounted(async () => {
+  await initializePreferences();       // ⚙️ Preferences 초기화
+  await render();                      // 🖼️ UI 렌더링
+
+  window.addEventListener('focus', render); // 🔄 앱 포커스 시 새로고침
+
+  backListener = await App.addListener('backButton', backHandler); // ⬅️ 백버튼 리스너
 
   if (Capacitor.getPlatform() === 'android') {
-    await checkAndRequestOverlayPermission();
+    await checkAndRequestOverlayPermission(); // 📲 안드로이드 권한 요청
   }
 
   App.addListener('resume', async () => {
@@ -295,24 +304,24 @@ onUnmounted(() => {
 });
 
 // -------- 동적 스타일 --------
-const settings = getSettings();
-const fontSizeRem = 0.8 + settings.fontSize * 0.2;
+const settings = ref({ fontSize: 3, textAlign: 'center', buttonSize: 3, theme: 'light' });
+
+onMounted(async () => {
+  settings.value = await getSettings();
+});
 const buttonHeight = settings.buttonSize * 12 + 28 + 'px';
 
 
 const todoStyle = computed(() => {
-  const settings = getSettings();
-  const fontSizeRem = 0.8 + settings.fontSize * 0.2;
   return {
-    fontSize: fontSizeRem + 'rem',
-    textAlign: settings.textAlign,
+    fontSize: `${0.8 + settings.value.fontSize * 0.2}rem`,
+    textAlign: settings.value.textAlign,
   };
 });
 
 const todoBoxStyle = computed(() => {
-  const settings = getSettings();
   return {
-    height: `${settings.buttonSize * 12 + 28}px`,
+    height: `${settings.value.buttonSize * 12 + 28}px`,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -326,8 +335,8 @@ const todoBoxStyle = computed(() => {
 
 import tinycolor from 'tinycolor2';
 
-function applyTheme(theme) {
-  const color = localStorage.getItem('customColor') || '#fce4ec';
+async function applyTheme(theme) {
+  const { value: color } = await Preferences.get({ key: 'customColor' });
   document.body.classList.remove('light-mode', 'dark-mode', 'custom-mode');
 
   if (theme === 'custom') {
