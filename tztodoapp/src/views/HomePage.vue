@@ -28,28 +28,36 @@
             class="column"
             :data-index="colIndex"
           >
-<div
-  v-for="(todo, todoIndex) in col"
-  :key="todoIndex"
-  class="todo-btn"
-  :style="todoBoxStyle"
-  @click="showPopup(colIndex, todoIndex, todo)"
->
-  <span :style="todoStyle">{{ todo }}</span>
-</div>
+          <div
+            v-for="(todo, todoIndex) in col"
+            :key="todoIndex"
+            class="todo-btn"
+            :style="todoBoxStyle"
+            @click="showPopup(colIndex, todoIndex, todo)"
+            >
+            <span :style="todoStyle">{{ todo }}</span>
           </div>
         </div>
+      </div>
 
-        <PopupModal
-          v-if="popupOpen"
-          :text="popupText"
-          @close="popupOpen = false"
-          @edit="handleEdit"
-          @delete="handleDelete"
-        />
+      <PopupModal
+        v-if="popupOpen"
+        :text="popupText"
+        @close="popupOpen = false"
+        @edit="handleEdit"
+        @delete="handleDelete"
+      />
 
         <div id="admob-placeholder">광고 영역</div>
       </div>
+
+
+      <div class="permission-buttons">
+        <button @click="requestBatteryPermission">🔋 배터리 최적화 제외</button>
+        <button @click="requestOverlayPermission">📲 다른 앱 위에 표시</button>
+      </div>
+
+
     </ion-content>
   </ion-page>
 </template>
@@ -71,6 +79,21 @@ import { App } from '@capacitor/app';
 import { onMounted, onUnmounted, ref, computed } from 'vue'; // ref도 여기 있음
 
 
+import { Capacitor } from '@capacitor/core';
+
+const requestBatteryPermission = async () => {
+  if (Capacitor.getPlatform() === 'android') {
+    await window.Capacitor.Plugins.PermissionPlugin.requestBattery();
+  }
+};
+
+const requestOverlayPermission = async () => {
+  if (Capacitor.getPlatform() === 'android') {
+    await window.Capacitor.Plugins.PermissionPlugin.requestOverlay();
+  }
+};
+
+
 const router = useRouter();
 
 const inputText = ref('');
@@ -79,6 +102,12 @@ const popupText = ref('');
 const selectedCol = ref(null);
 const selectedIndex = ref(null);
 const columns = ref([]);
+
+
+
+
+
+
 
 
 
@@ -105,11 +134,6 @@ function getSettings() {
   };
 }
 
-// -------- 기능 --------
-function applyTheme(theme) {
-  document.body.classList.remove('light-mode', 'dark-mode');
-  document.body.classList.add(theme === 'dark' ? 'dark-mode' : 'light-mode');
-}
 
 function goToSettings() {
   router.push('/setting');
@@ -220,9 +244,19 @@ function backHandler() {
 
 let backListener;
 
+const checkAndRequestOverlayPermission = async () => {
+  const hasOverlay = await checkOverlayPermission();
+  if (!hasOverlay) {
+    const confirm = window.confirm("📲 '다른 앱 위에 표시' 권한이 꺼져 있습니다.\n허용하시겠어요?");
+    if (confirm) {
+      await requestOverlayPermission();
+    }
+  }
+};
+
 onMounted(async () => {
   if (!localStorage.getItem('todoColumns')) {
-    localStorage.setItem('todoColumns', JSON.stringify([['안녕하세요']]));
+    localStorage.setItem('todoColumns', JSON.stringify([['안녕하세요']])); 
   }
   if (!localStorage.getItem('columnCount')) {
     localStorage.setItem('columnCount', '1');
@@ -230,14 +264,25 @@ onMounted(async () => {
 
   render();
   window.addEventListener('focus', render);
-
-  // ✅ 리스너 등록은 이곳만
   backListener = await App.addListener('backButton', backHandler);
+
+  if (Capacitor.getPlatform() === 'android') {
+    await checkAndRequestOverlayPermission();
+  }
+
+  App.addListener('resume', async () => {
+    const hasOverlay = await checkOverlayPermission();
+    if (!hasOverlay) {
+      alert('⚠️ 이 기능을 사용하려면 오버레이 권한이 필요합니다.');
+    }
+  });
 });
 
 
-
-
+const checkOverlayPermission = async () => {
+  const result = await window.Capacitor.Plugins.PermissionPlugin.hasOverlayPermission();
+  return result.value;
+};
 
 
 
@@ -277,15 +322,61 @@ const todoBoxStyle = computed(() => {
 });
 
 
+
+
+import tinycolor from 'tinycolor2';
+
+function applyTheme(theme) {
+  const color = localStorage.getItem('customColor') || '#fce4ec';
+  document.body.classList.remove('light-mode', 'dark-mode', 'custom-mode');
+
+  if (theme === 'custom') {
+    document.body.classList.add('custom-mode');
+    const dark = tinycolor(color).darken(10).toHexString();
+    const light = tinycolor(color).lighten(20).toHexString();
+    document.documentElement.style.setProperty('--custom-bg', color);
+    document.documentElement.style.setProperty('--custom-dark', dark);
+    document.documentElement.style.setProperty('--custom-light', light);
+  } else {
+    document.body.classList.add(`${theme}-mode`);
+  }
+}
+
+
 </script>
+
+
+
+
+
+
+
+
+
+
 
 <!-- 👇 컴포넌트 전용 스타일 -->
 <style scoped>
+
+.permission-buttons {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.permission-buttons button {
+  flex: 1;
+  font-size: 0.9rem;
+  padding: 0.5em;
+  border-radius: 6px;
+  border: 1px solid #aaa;
+  background-color: #f0f0f0;
+}
+
 .container {
   padding: 16px;
-  height: calc(100vh - 120px); /* 헤더+광고 영역 제외 */
+  height: calc(100vh - 120px);
   overflow-y: auto;
-  -webkit-overflow-scrolling: touch; /* ✅ 추가 */
+  -webkit-overflow-scrolling: touch;
   box-sizing: border-box;
 }
 .top-bar {
@@ -326,8 +417,8 @@ const todoBoxStyle = computed(() => {
 }
 .todo-btn {
   display: flex;
-  align-items: center;         /* ✅ 세로 중앙 정렬 */
-  justify-content: center;     /* 👉 중앙 정렬 기본값 */
+  align-items: center;
+  justify-content: center;
   padding: 0 8px;
   border: 1px solid;
   border-radius: 6px;
@@ -336,7 +427,6 @@ const todoBoxStyle = computed(() => {
   overflow: hidden;
   user-select: none;
   touch-action: auto;
-
 }
 
 .dragging {
@@ -360,13 +450,16 @@ const todoBoxStyle = computed(() => {
 }
 </style>
 
-<!-- 👇 글로벌 스타일: scoped 없이 -->
+<!-- 크로스 스타일 -->
 <style>
 :root {
   --light-bg: #ffffff;
   --dark-bg: #121212;
   --light-text: #000000;
   --dark-text: #ffffff;
+  --custom-bg: #fce4ec;
+  --custom-dark: #e91e63;
+  --custom-light: #f8bbd0;
 }
 
 body.light-mode {
@@ -379,7 +472,6 @@ body.dark-mode {
   color: var(--dark-text);
 }
 
-/* 입력창 배경/글자색 */
 body.light-mode .top-bar textarea {
   background-color: #ffffff;
   color: #000000;
@@ -389,7 +481,15 @@ body.dark-mode .top-bar textarea {
   color: #ffffff;
 }
 
-/* 공통 배경 및 텍스트 색상 */
+body.light-mode .top-bar button {
+  background-color: #e0e0e0;
+  color: #000000;
+}
+body.dark-mode .top-bar button {
+  background-color: #444444;
+  color: #ffffff;
+}
+
 body.light-mode .container,
 body.light-mode .todo-btn,
 body.light-mode .top-bar {
@@ -404,8 +504,6 @@ body.dark-mode .top-bar {
   color: white;
 }
 
-/* +추가 버튼 공통 스타일 */
-/* +추가 버튼 공통 */
 .add-row button {
   flex: 1;
   font-size: 1rem;
@@ -416,25 +514,23 @@ body.dark-mode .top-bar {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: transparent; /* 배경 색은 모드별 지정 */
+  background-color: transparent;
 }
 
-/* 라이트 모드 - 밝은 회색 */
 body.light-mode .add-row button {
-  background-color: #e0e0e0; /* 밝은 회색 */
+  background-color: #e0e0e0;
   color: #000000;
-  border: 2px solid #999999; /* 중간 회색 윤곽선 */
+  border: 2px solid #999999;
 }
 
-/* 다크 모드 - 어두운 회색 */
 body.dark-mode .add-row button {
-  background-color: #333333; /* 어두운 회색 */
+  background-color: #333333;
   color: #ffffff;
-  border: 2px solid #888888; /* 밝은 회색 윤곽선 */
+  border: 2px solid #888888;
 }
 
 ion-toolbar {
-  padding-top: env(safe-area-inset-top, 24px); /* iOS, Android 모두 고려 */
+  padding-top: env(safe-area-inset-top, 24px);
 }
 
 ion-header ion-toolbar {
@@ -448,5 +544,31 @@ ion-title {
   margin-top: 4px;
 }
 
-
+body.custom-mode {
+  background-color: var(--custom-bg);
+  color: black;
+}
+body.custom-mode .container,
+body.custom-mode .top-bar {
+  background-color: var(--custom-bg);
+  color: black;
+}
+body.custom-mode .top-bar textarea {
+  background-color: var(--custom-light);
+  color: black;
+}
+body.custom-mode .top-bar button {
+  background-color: var(--custom-dark);
+  color: black;
+}
+body.custom-mode .add-row button {
+  background-color: var(--custom-dark);
+  color: black;
+  border: 2px solid var(--custom-dark);
+}
+body.custom-mode .todo-btn {
+  background-color: var(--custom-light);
+  color: black;
+  border: 1px solid var(--custom-dark);
+}
 </style>
