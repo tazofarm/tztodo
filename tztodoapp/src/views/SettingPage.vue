@@ -2,15 +2,16 @@
   <ion-page>
     <ion-header>
       <ion-toolbar>
-        <ion-title>⚙️ 설정</ion-title>
+        <ion-title> </ion-title>
       </ion-toolbar>
     </ion-header>
 
     <ion-content :fullscreen="true">
       <div class="container">
+        ⚙️ 설정
         <!-- 테마 설정 -->
         <div class="setting-section">
-          <label>배경 설정</label>
+          <label>※ 배경 설정 </label>
           <div class="vertical-radio">
             <div class="mode-row">
               <label><input type="radio" value="light" v-model="theme" /> 라이트모드</label>
@@ -31,7 +32,7 @@
 
         <!-- 나머지 설정 섹션들 -->
         <div class="setting-section">
-          <label>배열 수</label>
+          <label>※ 배열 수</label>
           <div class="radio-group">
             <label><input type="radio" value="1" v-model="columnCount" /> 1열</label>
             <label><input type="radio" value="2" v-model="columnCount" /> 2열</label>
@@ -40,7 +41,7 @@
         </div>
 
         <div class="setting-section">
-          <label>글자 크기</label>
+          <label>※ 글자 크기</label>
           <div class="radio-group">
             <label><input type="radio" value="1" v-model="fontSize" /> 1</label>
             <label><input type="radio" value="2" v-model="fontSize" /> 2</label>
@@ -51,7 +52,7 @@
         </div>
 
         <div class="setting-section">
-          <label>버튼 크기</label>
+          <label>※ 버튼 크기</label>
           <div class="radio-group">
             <label><input type="radio" value="1" v-model="buttonSize" /> 1</label>
             <label><input type="radio" value="2" v-model="buttonSize" /> 2</label>
@@ -106,8 +107,8 @@ import { useRouter } from 'vue-router';
 const router = useRouter();
 const theme = ref('light');
 const columnCount = ref('3');
-const fontSize = ref('2');
-const buttonSize = ref('3');
+const fontSize = ref('1');
+const buttonSize = ref('1');
 const customColor = ref('#fce4ec');
 const showPalette = ref(false);
 

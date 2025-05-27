@@ -1,5 +1,5 @@
 // PermissionHelper.java
-package com.tz.tztodoapp;
+package com.tztodo.app;
 
 import android.app.Activity;
 import android.content.Context;

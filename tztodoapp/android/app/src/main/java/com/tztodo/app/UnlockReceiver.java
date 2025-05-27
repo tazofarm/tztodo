@@ -1,4 +1,4 @@
-package com.tz.tztodoapp;
+package com.tztodo.app;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

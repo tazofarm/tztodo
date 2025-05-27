@@ -1,7 +1,7 @@
-package com.tz.tztodoapp;
+package com.tztodo.app;
 
 import com.getcapacitor.BridgeActivity;
-import com.tz.tztodoapp.PermissionPlugin; // 추가
+import com.tztodo.app.PermissionPlugin; // 추가
 
 import android.os.Bundle;
 import android.os.Build;

@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.tz.tztodoapp',
-  appName: 'tztodoapp',
+  appId: 'com.tztodo.app',
+  appName: 'PlayToDo',
   webDir: 'dist'
 };
 

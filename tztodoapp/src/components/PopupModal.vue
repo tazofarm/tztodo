@@ -69,6 +69,8 @@ textarea {
   width: 100%;
   margin-bottom: 12px;
   font-size: 16px;
+  color: white;              /* 글씨: 흰색 */
+  background-color: black;   /* 배경: 검정색 */
 }
 .button-group {
   margin-top: 30px; /* 버튼 전체 아래로 이동 */

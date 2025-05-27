@@ -2,7 +2,7 @@
   <ion-page>
     <ion-header>
       <ion-toolbar>
-        <ion-title>To-Do</ion-title>
+        <ion-title> </ion-title>
       </ion-toolbar>
     </ion-header>
 
@@ -126,9 +126,9 @@ async function setTodos(data) {
   await Preferences.set({ key: 'todoColumns', value: JSON.stringify(data) });
 }
 async function getSettings() {
-  const fontSize = parseInt((await Preferences.get({ key: 'fontSize' })).value || '3');
+  const fontSize = parseInt((await Preferences.get({ key: 'fontSize' })).value || '1');
   const textAlign = (await Preferences.get({ key: 'textAlign' })).value || 'center';
-  const buttonSize = parseInt((await Preferences.get({ key: 'buttonSize' })).value || '3');
+  const buttonSize = parseInt((await Preferences.get({ key: 'buttonSize' })).value || '1');
   const theme = (await Preferences.get({ key: 'theme' })).value || 'light';
   return { fontSize, textAlign, buttonSize, theme };
 }
