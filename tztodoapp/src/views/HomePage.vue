@@ -62,6 +62,8 @@
   </ion-page>
 </template>
 
+<!-- (생략된 템플릿 및 스타일 부분은 변경 없음) -->
+
 <script setup>
 import {
   IonPage,
@@ -71,16 +73,12 @@ import {
   IonContent
 } from '@ionic/vue';
 
-
 import Sortable from 'sortablejs';
 import { useRouter } from 'vue-router';
 import PopupModal from '@/components/PopupModal.vue';
 import { App } from '@capacitor/app';
 import { onMounted, onUnmounted, ref, computed } from 'vue';
 import { Preferences } from '@capacitor/preferences';
-
-
-
 import { Capacitor } from '@capacitor/core';
 
 const requestBatteryPermission = async () => {
@@ -95,7 +93,6 @@ const requestOverlayPermission = async () => {
   }
 };
 
-
 const router = useRouter();
 
 const inputText = ref('');
@@ -103,15 +100,7 @@ const popupOpen = ref(false);
 const popupText = ref('');
 const selectedCol = ref(null);
 const selectedIndex = ref(null);
-const columns = ref([[], [], []]); // 또는 초기엔 1개라도 빈 배열 넣기
-
-
-
-
-
-
-
-
+const columns = ref([[], [], []]);
 
 async function getColumnCount() {
   const { value } = await Preferences.get({ key: 'columnCount' });
@@ -177,9 +166,8 @@ async function render() {
   await applyTheme(settings.theme);
 
   let data = await getTodos();
-
-while (data.length < colCount) data.push([]);
-if (data.length > colCount) data = data.slice(0, colCount);
+  while (data.length < colCount) data.push([]);
+  if (data.length > colCount) data = data.slice(0, colCount);
 
   await setTodos(data);
   columns.value = Array.from({ length: colCount }, (_, i) => data[i] || []);
@@ -200,31 +188,29 @@ function initSortable() {
       delayOnTouchOnly: true,
       touchStartThreshold: 5,
       onAdd: async (evt) => {
-  const from = evt.from.dataset.index;
-  const to = evt.to.dataset.index;
-  const movedItem = evt.item.textContent;
-  const todos = await getTodos();
-  const index = todos[from].indexOf(movedItem);
-  if (index > -1) todos[from].splice(index, 1);
-  todos[to].splice(evt.newIndex, 0, movedItem);
-  await setTodos(todos);
-},
-onUpdate: async () => {
-  const newData = [];
-  for (const col of columnsEl.children) {
-    const items = Array.from(col.children).map((x) => x.textContent);
-    newData.push(items);
-  }
-  await setTodos(newData);
-},
+        const from = evt.from.dataset.index;
+        const to = evt.to.dataset.index;
+        const movedItem = evt.item.textContent;
+        const todos = await getTodos();
+        const index = todos[from].indexOf(movedItem);
+        if (index > -1) todos[from].splice(index, 1);
+        todos[to].splice(evt.newIndex, 0, movedItem);
+        await setTodos(todos);
+      },
+      onUpdate: async () => {
+        const newData = [];
+        for (const col of columnsEl.children) {
+          const items = Array.from(col.children).map((x) => x.textContent);
+          newData.push(items);
+        }
+        await setTodos(newData);
+      },
     });
   }
 }
 
 function backHandler() {
   const path = router.currentRoute.value.path;
-  console.log('Current path:', path);
-
   if (popupOpen.value) {
     popupOpen.value = false;
   } else if (path !== '/home') {
@@ -233,10 +219,6 @@ function backHandler() {
     App.exitApp();
   }
 }
-
-
-
-
 
 let backListener;
 
@@ -250,33 +232,36 @@ const checkAndRequestOverlayPermission = async () => {
   }
 };
 
-
-
 async function initializePreferences() {
   const todos = await Preferences.get({ key: 'todoColumns' });
-if (!todos.value) {
-  const colCount = await getColumnCount();
-  const defaultCols = Array.from({ length: colCount }, () => []);
-  defaultCols[0].push('안녕하세요');
-  await Preferences.set({ key: 'todoColumns', value: JSON.stringify(defaultCols) });
-}
+  if (!todos.value) {
+    const colCount = await getColumnCount();
+    const defaultCols = Array.from({ length: colCount }, () => []);
+    defaultCols[0].push('안녕하세요');
+    await Preferences.set({ key: 'todoColumns', value: JSON.stringify(defaultCols) });
+  }
 
   const col = await Preferences.get({ key: 'columnCount' });
   if (!col.value) {
-    await Preferences.set({ key: 'columnCount', value: '1' });
+    await Preferences.set({ key: 'columnCount', value: '3' }); // ✅ 변경: 기본 3열
+  }
+
+  const theme = await Preferences.get({ key: 'theme' });
+  if (!theme.value) {
+    await Preferences.set({ key: 'theme', value: 'dark' }); // ✅ 추가: 기본 다크모드
   }
 }
 
 onMounted(async () => {
-  await initializePreferences();       // ⚙️ Preferences 초기화
-  await render();                      // 🖼️ UI 렌더링
+  await initializePreferences();
+  await render();
 
-  window.addEventListener('focus', render); // 🔄 앱 포커스 시 새로고침
+  window.addEventListener('focus', render);
 
-  backListener = await App.addListener('backButton', backHandler); // ⬅️ 백버튼 리스너
+  backListener = await App.addListener('backButton', backHandler);
 
   if (Capacitor.getPlatform() === 'android') {
-    await checkAndRequestOverlayPermission(); // 📲 안드로이드 권한 요청
+    await checkAndRequestOverlayPermission();
   }
 
   App.addListener('resume', async () => {
@@ -287,30 +272,20 @@ onMounted(async () => {
   });
 });
 
-
 const checkOverlayPermission = async () => {
   const result = await window.Capacitor.Plugins.PermissionPlugin.hasOverlayPermission();
   return result.value;
 };
 
-
-
-
-
-
-
 onUnmounted(() => {
   backListener?.remove();
 });
 
-// -------- 동적 스타일 --------
 const settings = ref({ fontSize: 3, textAlign: 'center', buttonSize: 3, theme: 'light' });
 
 onMounted(async () => {
   settings.value = await getSettings();
 });
-const buttonHeight = settings.buttonSize * 12 + 28 + 'px';
-
 
 const todoStyle = computed(() => {
   return {
@@ -330,9 +305,6 @@ const todoBoxStyle = computed(() => {
   };
 });
 
-
-
-
 import tinycolor from 'tinycolor2';
 
 async function applyTheme(theme) {
@@ -350,8 +322,6 @@ async function applyTheme(theme) {
     document.body.classList.add(`${theme}-mode`);
   }
 }
-
-
 </script>
 
 
