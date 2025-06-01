@@ -34,20 +34,31 @@
         <div class="setting-section">
           <label>※ 배열 수</label>
           <div class="radio-group">
-            <label><input type="radio" value="1" v-model="columnCount" /> 1열</label>
-            <label><input type="radio" value="2" v-model="columnCount" /> 2열</label>
-            <label><input type="radio" value="3" v-model="columnCount" /> 3열</label>
+            <div class="radio-row">
+              <label><input type="radio" value="1" v-model="columnCount" /> 1열</label>
+              <label><input type="radio" value="2" v-model="columnCount" /> 2열</label>
+              <label><input type="radio" value="3" v-model="columnCount" /> 3열</label>
+              <label><input type="radio" value="4" v-model="columnCount" /> 4열</label>
+            </div>
+            <div class="radio-row">
+              <label><input type="radio" value="5" v-model="columnCount" /> 5열</label>
+              <label><input type="radio" value="6" v-model="columnCount" /> 6열</label>
+              <label><input type="radio" value="7" v-model="columnCount" /> 7열</label>
+              <label><input type="radio" value="8" v-model="columnCount" /> 8열</label>
+           </div>
           </div>
         </div>
 
         <div class="setting-section">
           <label>※ 글자 크기</label>
           <div class="radio-group">
-            <label><input type="radio" value="1" v-model="fontSize" /> 1</label>
-            <label><input type="radio" value="2" v-model="fontSize" /> 2</label>
-            <label><input type="radio" value="3" v-model="fontSize" /> 3</label>
-            <label><input type="radio" value="4" v-model="fontSize" /> 4</label>
-            <label><input type="radio" value="5" v-model="fontSize" /> 5</label>
+            <div class="radio-row">
+              <label><input type="radio" value="1" v-model="fontSize" /> 1</label>
+              <label><input type="radio" value="2" v-model="fontSize" /> 2</label>
+              <label><input type="radio" value="3" v-model="fontSize" /> 3</label>
+              <label><input type="radio" value="4" v-model="fontSize" /> 4</label>
+              <label><input type="radio" value="5" v-model="fontSize" /> 5</label>
+            </div>
           </div>
         </div>
 
@@ -139,8 +150,8 @@ async function initSetting(key: string, defaultValue: string): Promise<string> {
 onMounted(async () => {
   theme.value = await initSetting('theme', 'light');
   columnCount.value = await initSetting('columnCount', '3');
-  fontSize.value = await initSetting('fontSize', '2');
-  buttonSize.value = await initSetting('buttonSize', '3');
+  fontSize.value = await initSetting('fontSize', '1');
+  buttonSize.value = await initSetting('buttonSize', '1');
   customColor.value = await initSetting('customColor', '#fce4ec');
 });
 
@@ -320,6 +331,14 @@ ion-modal.custom-modal {
   font-size: 14px;
   z-index: 10;
 }
+
+
+.radio-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 1px; /* 줄 간 간격 조정 */
+}
+
 </style>
 
 

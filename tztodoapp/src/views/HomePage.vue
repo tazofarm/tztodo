@@ -115,7 +115,7 @@ async function setTodos(data) {
   await Preferences.set({ key: 'todoColumns', value: JSON.stringify(data) });
 }
 async function getSettings() {
-  const fontSize = parseInt((await Preferences.get({ key: 'fontSize' })).value || '1');
+  const fontSize = parseInt((await Preferences.get({ key: 'fontSize' })).value || '3');
   const textAlign = (await Preferences.get({ key: 'textAlign' })).value || 'center';
   const buttonSize = parseInt((await Preferences.get({ key: 'buttonSize' })).value || '1');
   const theme = (await Preferences.get({ key: 'theme' })).value || 'light';
@@ -237,7 +237,7 @@ async function initializePreferences() {
   if (!todos.value) {
     const colCount = await getColumnCount();
     const defaultCols = Array.from({ length: colCount }, () => []);
-    defaultCols[0].push('안녕하세요');
+    defaultCols[0].push('PlayToDo');
     await Preferences.set({ key: 'todoColumns', value: JSON.stringify(defaultCols) });
   }
 
@@ -250,7 +250,15 @@ async function initializePreferences() {
   if (!theme.value) {
     await Preferences.set({ key: 'theme', value: 'dark' }); // ✅ 추가: 기본 다크모드
   }
+
+
+  const fontSize = await Preferences.get({ key: 'fontSize' });
+  if (!fontSize.value) {
+    await Preferences.set({ key: 'fontSize', value: '3' }); // 기본 글자 크기 3
+  }
 }
+
+
 
 onMounted(async () => {
   await initializePreferences();
@@ -289,7 +297,7 @@ onMounted(async () => {
 
 const todoStyle = computed(() => {
   return {
-    fontSize: `${0.8 + settings.value.fontSize * 0.2}rem`,
+    fontSize: `${0.3 + settings.value.fontSize * 0.2}rem`,
     textAlign: settings.value.textAlign,
   };
 });
@@ -485,7 +493,7 @@ body.dark-mode .top-bar {
 
 .add-row button {
   flex: 1;
-  font-size: 1rem;
+  font-size: 0.8rem;
   height: 48px;
   line-height: 48px;
   text-align: center;
