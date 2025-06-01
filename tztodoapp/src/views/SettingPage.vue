@@ -148,9 +148,9 @@ async function initSetting(key: string, defaultValue: string): Promise<string> {
 }
 
 onMounted(async () => {
-  theme.value = await initSetting('theme', 'light');
+  theme.value = await initSetting('theme', 'dark');
   columnCount.value = await initSetting('columnCount', '3');
-  fontSize.value = await initSetting('fontSize', '1');
+  fontSize.value = await initSetting('fontSize', '3');
   buttonSize.value = await initSetting('buttonSize', '1');
   customColor.value = await initSetting('customColor', '#fce4ec');
 });
