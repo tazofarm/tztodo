@@ -6,7 +6,7 @@
       </ion-toolbar>
     </ion-header>
 
-    <ion-content :fullscreen="false">
+    <ion-content>
       <div class="container">
         <div class="top-bar">
           <textarea v-model="inputText" placeholder="할 일을 입력하세요" />
@@ -28,41 +28,29 @@
             class="column"
             :data-index="colIndex"
           >
-          <div
-            v-for="(todo, todoIndex) in col"
-            :key="todoIndex"
-            class="todo-btn"
-            :style="todoBoxStyle"
-            @click="showPopup(colIndex, todoIndex, todo)"
+            <div
+              v-for="(todo, todoIndex) in col"
+              :key="todoIndex"
+              class="todo-btn"
+              :style="todoBoxStyle"
+              @click="showPopup(colIndex, todoIndex, todo)"
             >
-            <span :style="todoStyle">{{ todo }}</span>
+              <span :style="todoStyle">{{ todo }}</span>
+            </div>
           </div>
         </div>
+
+        <PopupModal
+          v-if="popupOpen"
+          :text="popupText"
+          @close="popupOpen = false"
+          @edit="handleEdit"
+          @delete="handleDelete"
+        />
       </div>
-
-      <PopupModal
-        v-if="popupOpen"
-        :text="popupText"
-        @close="popupOpen = false"
-        @edit="handleEdit"
-        @delete="handleDelete"
-      />
-
-        <div id="admob-placeholder">광고 영역</div>
-      </div>
-
-
-      <div class="permission-buttons">
-        <button @click="requestBatteryPermission">🔋 배터리 최적화 제외</button>
-        <button @click="requestOverlayPermission">📲 다른 앱 위에 표시</button>
-      </div>
-
-
     </ion-content>
   </ion-page>
 </template>
-
-<!-- (생략된 템플릿 및 스타일 부분은 변경 없음) -->
 
 <script setup>
 import {
@@ -76,10 +64,14 @@ import {
 import Sortable from 'sortablejs';
 import { useRouter } from 'vue-router';
 import PopupModal from '@/components/PopupModal.vue';
+import AdBanner from '@/components/AdBanner.vue';
 import { App } from '@capacitor/app';
 import { onMounted, onUnmounted, ref, computed } from 'vue';
 import { Preferences } from '@capacitor/preferences';
 import { Capacitor } from '@capacitor/core';
+
+
+
 
 const requestBatteryPermission = async () => {
   if (Capacitor.getPlatform() === 'android') {
@@ -134,12 +126,14 @@ function showPopup(colIndex, todoIndex, text) {
 }
 
 async function handleEdit(newText) {
-  const todos = await getTodos();
-  todos[selectedCol.value][selectedIndex.value] = newText;
-  setTodos(todos);
+  const updated = [...columns.value];
+  updated[selectedCol.value][selectedIndex.value] = newText;
+
+  await setTodos(updated);
+  columns.value = updated;
   popupOpen.value = false;
-  render();
 }
+
 
 async function handleDelete() {
   const todos = await getTodos();
@@ -263,6 +257,7 @@ async function initializePreferences() {
 onMounted(async () => {
   await initializePreferences();
   await render();
+  settings.value = await getSettings();
 
   window.addEventListener('focus', render);
 
@@ -280,20 +275,20 @@ onMounted(async () => {
   });
 });
 
+onUnmounted(() => {
+  backListener?.remove();
+  window.removeEventListener('focus', render);
+});
+
 const checkOverlayPermission = async () => {
   const result = await window.Capacitor.Plugins.PermissionPlugin.hasOverlayPermission();
   return result.value;
 };
 
-onUnmounted(() => {
-  backListener?.remove();
-});
 
 const settings = ref({ fontSize: 3, textAlign: 'center', buttonSize: 3, theme: 'light' });
 
-onMounted(async () => {
-  settings.value = await getSettings();
-});
+
 
 const todoStyle = computed(() => {
   return {
@@ -361,7 +356,7 @@ async function applyTheme(theme) {
 
 .container {
   padding: 16px;
-  height: calc(100vh - 120px);
+  height: calc(100vh - 60px); /* 광고 영역 여백 확보 */
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   box-sizing: border-box;

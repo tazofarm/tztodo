@@ -1,2 +1,3 @@
-/* For information on how to create your own theme, please see:
-http://ionicframework.com/docs/theming/ */
+ion-content {
+  padding-bottom: var(--ad-height, 60px); /* 광고 높이 없으면 기본 60px */
+}

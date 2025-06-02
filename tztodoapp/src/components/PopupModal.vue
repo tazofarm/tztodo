@@ -10,7 +10,7 @@
         </div>
       </template>
       <template v-else>
-        <textarea v-model="editedText" rows="5" />
+        <textarea ref="editBox" v-model="editedText" rows="5" />
         <div class="button-group">
           <button @click="onConfirmEdit">확인</button>
           <button @click="onClose">취소</button>
@@ -21,7 +21,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
+import { ref, watch, nextTick } from 'vue';
 
 const props = defineProps({
   text: String,
@@ -32,10 +32,21 @@ const emits = defineEmits(['close', 'edit', 'delete']);
 
 const mode = ref('view');
 const editedText = ref(props.text);
+const editBox = ref(null);
 
 watch(() => props.text, (newVal) => {
   editedText.value = newVal;
   mode.value = 'view';
+});
+
+watch(mode, async (newVal) => {
+  if (newVal === 'edit') {
+    await nextTick();
+    if (editBox.value) {
+      editBox.value.focus();
+      editBox.value.select();
+    }
+  }
 });
 
 const onClose = () => emits('close');
@@ -73,12 +84,12 @@ textarea {
   background-color: black;   /* 배경: 검정색 */
 }
 .button-group {
-  margin-top: 30px; /* 버튼 전체 아래로 이동 */
+  margin-top: 30px;
 }
 .button-group button {
   display: block;
   width: 100%;
-  margin: 14px 0; /* 버튼 간 간격 증가 */
+  margin: 14px 0;
   padding: 14px;
   font-size: 16px;
   border-radius: 8px;
