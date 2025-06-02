@@ -95,8 +95,8 @@
           </div>
         </div>
       </ion-modal>
-            <!-- 하단 광고 영역 -->
-      <div id="admob-placeholder">광고 영역</div>
+        
+  
     </ion-content>
   </ion-page>
 </template>
@@ -114,7 +114,7 @@ import {
 import { ref, computed, onMounted } from 'vue';
 import { Preferences } from '@capacitor/preferences';
 import { useRouter } from 'vue-router';
-import AdBanner from '@/components/AdBanner.vue';
+
 
 const router = useRouter();
 const theme = ref('light');

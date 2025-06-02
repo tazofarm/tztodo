@@ -48,7 +48,7 @@
           @delete="handleDelete"
         />
       </div>
-      <AdBanner position="bottom" />
+      
     </ion-content>
   </ion-page>
 </template>
@@ -66,7 +66,7 @@ import {
 import Sortable from 'sortablejs';
 import { useRouter } from 'vue-router';
 import PopupModal from '@/components/PopupModal.vue';
-import AdBanner from '@/components/AdBanner.vue';
+
 import { App } from '@capacitor/app';
 import { onMounted, onUnmounted, ref, computed } from 'vue';
 import { Preferences } from '@capacitor/preferences';
