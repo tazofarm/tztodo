@@ -88,7 +88,6 @@
         </div>
       </div>
 
-      <!-- 색상 선택 팝업 -->
       <ion-modal :is-open="showPalette" @did-dismiss="showPalette = false" class="custom-modal">
         <div class="modal-content">
           <h3>색상 선택</h3>
@@ -105,6 +104,7 @@
           </div>
         </div>
       </ion-modal>
+      <AdBanner position="bottom" />
     </ion-content>
   </ion-page>
 </template>
@@ -204,9 +204,9 @@ function getContrastYIQ(hexcolor: string) {
 <style scoped>
 .container {
   padding: 16px;
+  padding-bottom: calc(var(--ad-height, 60px) + 60px);
   height: 100%;
   overflow-y: auto;
-  padding-bottom: var(--ad-height, 60px); /* 광고와 겹치지 않도록 */
 }
 .radio-group {
   display: flex;

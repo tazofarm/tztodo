@@ -48,9 +48,11 @@
           @delete="handleDelete"
         />
       </div>
+      <AdBanner position="bottom" />
     </ion-content>
   </ion-page>
 </template>
+
 
 <script setup>
 import {
@@ -356,7 +358,8 @@ async function applyTheme(theme) {
 
 .container {
   padding: 16px;
-  height: calc(100vh - 60px); /* 광고 영역 여백 확보 */
+  padding-bottom: calc(var(--ad-height, 60px) + 60px); /* 광고 + 홈버튼 영역 고려 */
+  height: 100%;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   box-sizing: border-box;
