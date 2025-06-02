@@ -31,6 +31,15 @@ const app = createApp(App)
   .use(IonicVue)
   .use(router);
 
+// 👉 추가: 라우터 이동 직전에 포커스 제거
+router.beforeEach((to, from, next) => {
+  const active = document.activeElement;
+  if (active instanceof HTMLElement) {
+    active.blur();
+  }
+  next();
+});
+
 router.isReady().then(async () => {
   app.mount('#app');
 
@@ -38,7 +47,6 @@ router.isReady().then(async () => {
     try {
       await AdMob.initialize();
 
-      // 광고 높이 감지 후 CSS 변수 설정
       AdMob.addListener(BannerAdPluginEvents.SizeChanged, (size: AdMobBannerSize) => {
         if (size?.height) {
           document.documentElement.style.setProperty('--ad-height', `${size.height}px`);
@@ -56,16 +64,25 @@ router.isReady().then(async () => {
         await AdMob.showBanner(options);
       };
 
-      // 앱 시작 시 한 번 표시
       await showBanner();
 
-      // 페이지 전환 시마다 광고 다시 표시
       router.afterEach(async () => {
         try {
           await showBanner();
         } catch (err) {
           console.error('AdMob 광고 재표시 실패:', err);
         }
+
+        // 👇 숨겨진 페이지 내 포커스 제거
+        const hiddenPages = document.querySelectorAll('.ion-page-hidden[aria-hidden="true"]');
+        hiddenPages.forEach(page => {
+          if (page.contains(document.activeElement)) {
+            const active = document.activeElement;
+            if (active instanceof HTMLElement) {
+              active.blur();
+            }
+          }
+        });
       });
 
     } catch (err) {

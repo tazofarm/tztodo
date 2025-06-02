@@ -1,13 +1,14 @@
 <template>
   <ion-page>
-    <ion-header v-if="showTopBar === 'on'">
+    <ion-header>
       <ion-toolbar>
-        <ion-title>⚙️ 설정</ion-title>
+        <ion-title> </ion-title>
       </ion-toolbar>
     </ion-header>
 
-    <ion-content>
+    <ion-content :fullscreen="true">
       <div class="container">
+        ⚙️ 설정
         <!-- 테마 설정 -->
         <div class="setting-section">
           <label>※ 배경 설정 </label>
@@ -17,19 +18,19 @@
               <label><input type="radio" value="dark" v-model="theme" /> 다크모드</label>
             </div>
             <div class="color-label-row">
-              <label>
-                <input type="radio" value="custom" v-model="theme" /> 색상 선택
-              </label>
-              <span
-                class="inline-color-box"
-                :style="{ backgroundColor: customColor, opacity: theme === 'custom' ? 1 : 0.4, cursor: theme === 'custom' ? 'pointer' : 'default' }"
-                @click="theme === 'custom' && (showPalette = true)"
-              ></span>
-            </div>
+  <label>
+    <input type="radio" value="custom" v-model="theme" /> 색상 선택
+  </label>
+  <span
+    class="inline-color-box"
+    :style="{ backgroundColor: customColor, opacity: theme === 'custom' ? 1 : 0.4, cursor: theme === 'custom' ? 'pointer' : 'default' }"
+    @click="theme === 'custom' && (showPalette = true)"
+  ></span>
+</div>
           </div>
         </div>
 
-        <!-- 배열 수 -->
+        <!-- 나머지 설정 섹션들 -->
         <div class="setting-section">
           <label>※ 배열 수</label>
           <div class="radio-group">
@@ -44,11 +45,10 @@
               <label><input type="radio" value="6" v-model="columnCount" /> 6열</label>
               <label><input type="radio" value="7" v-model="columnCount" /> 7열</label>
               <label><input type="radio" value="8" v-model="columnCount" /> 8열</label>
-            </div>
+           </div>
           </div>
         </div>
 
-        <!-- 글자 크기 -->
         <div class="setting-section">
           <label>※ 글자 크기</label>
           <div class="radio-group">
@@ -62,7 +62,6 @@
           </div>
         </div>
 
-        <!-- 버튼 크기 -->
         <div class="setting-section">
           <label>※ 버튼 크기</label>
           <div class="radio-group">
@@ -74,20 +73,12 @@
           </div>
         </div>
 
-        <!-- 상단바 노출 -->
-        <div class="setting-section">
-          <label>※ 상단바 노출</label>
-          <div class="radio-group">
-            <label><input type="radio" value="on" v-model="showTopBar" /> On</label>
-            <label><input type="radio" value="off" v-model="showTopBar" /> Off</label>
-          </div>
-        </div>
-
         <div style="margin-top: 20px;">
           <ion-button expand="block" @click="saveSettings" :style="buttonStyle">적용</ion-button>
         </div>
       </div>
 
+      <!-- 색상 선택 모달 -->
       <ion-modal :is-open="showPalette" @did-dismiss="showPalette = false" class="custom-modal">
         <div class="modal-content">
           <h3>색상 선택</h3>
@@ -104,7 +95,8 @@
           </div>
         </div>
       </ion-modal>
-      <AdBanner position="bottom" />
+            <!-- 하단 광고 영역 -->
+      <div id="admob-placeholder">광고 영역</div>
     </ion-content>
   </ion-page>
 </template>
@@ -122,6 +114,7 @@ import {
 import { ref, computed, onMounted } from 'vue';
 import { Preferences } from '@capacitor/preferences';
 import { useRouter } from 'vue-router';
+import AdBanner from '@/components/AdBanner.vue';
 
 const router = useRouter();
 const theme = ref('light');
@@ -141,6 +134,15 @@ const colorGrid = [
 function selectColor(color: string) {
   customColor.value = color;
   showPalette.value = false;
+}
+
+function onPaletteClosed() {
+  showPalette.value = false;
+
+  const active = document.activeElement as HTMLElement;
+  if (active && document.querySelector('.custom-modal')?.contains(active)) {
+    active.blur();
+  }
 }
 
 async function initSetting(key: string, defaultValue: string): Promise<string> {
@@ -170,7 +172,7 @@ async function saveSettings() {
   if (theme.value === 'custom') {
     await Preferences.set({ key: 'customColor', value: customColor.value });
   }
-  window.location.href = '/home';
+  router.push('/home');
 }
 
 const buttonStyle = computed(() => {

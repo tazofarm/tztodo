@@ -43,7 +43,7 @@
         <PopupModal
           v-if="popupOpen"
           :text="popupText"
-          @close="popupOpen = false"
+          @close="onPopupClose"
           @edit="handleEdit"
           @delete="handleDelete"
         />
@@ -117,7 +117,7 @@ async function getSettings() {
 }
 
 function goToSettings() {
-  router.push('/setting');
+  router.push('/home/settings'); // ✅ 정확한 경로
 }
 
 function showPopup(colIndex, todoIndex, text) {
@@ -253,8 +253,14 @@ async function initializePreferences() {
     await Preferences.set({ key: 'fontSize', value: '3' }); // 기본 글자 크기 3
   }
 }
+function onPopupClose() {
+  popupOpen.value = false;
 
-
+  const active = document.activeElement;
+  if (active instanceof HTMLElement && document.querySelector('.todo-btn')?.contains(active)) {
+    active.blur();
+  }
+}
 
 onMounted(async () => {
   await initializePreferences();

@@ -1,23 +1,32 @@
-import { createRouter, createWebHistory } from '@ionic/vue-router';
-import { RouteRecordRaw } from 'vue-router';
+import { createRouter, createWebHistory } from '@ionic/vue-router'
 
-//page정리
-import HomePage from '../views/HomePage.vue'
-import SettingPage from '../views/SettingPage.vue'
+import Home from '@/views/Home.vue'
+import HomePage from '@/views/HomePage.vue'
+import SettingPage from '@/views/SettingPage.vue'
 
-const routes: Array<RouteRecordRaw> = [
+const routes = [
   {
-    path: '/', redirect: '/home'
+    path: '/home',
+    component: Home,
+    children: [
+      {
+        path: '',
+        component: HomePage
+      },
+      {
+        path: 'settings',
+        component: SettingPage
+      }
+    ]
   },
-
-  //라우터 정리
-  { path: '/home',name: 'Home',component: HomePage },
-  { path: '/setting',name: 'Setting',component: SettingPage }
-
+  {
+    path: '/',
+    redirect: '/home'
+  }
 ]
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHistory(),
   routes
 })
 
