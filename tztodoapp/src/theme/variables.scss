@@ -1,0 +1,52 @@
+// Ionic의 핵심 스타일 불러오기 (기본 구조, 전역 설정 등 포함)
+@import "@ionic/vue/css/core.css";
+
+// 브라우저 간 스타일 차이를 줄이기 위한 초기화 스타일
+@import "@ionic/vue/css/normalize.css";
+
+// 레이아웃 및 그리드 시스템 등 구조 관련 스타일
+@import "@ionic/vue/css/structure.css";
+
+// 기본 텍스트 폰트/크기 등의 타이포그래피 설정
+@import "@ionic/vue/css/typography.css";
+
+// 다크 테마용 색상 팔레트
+@import "@ionic/vue/css/palettes/dark.css";
+
+// 라이트 테마용 색상 팔레트
+@import "@ionic/vue/css/palettes/light.css";
+
+
+/* 사용자 정의 테마 색상 정의 (CSS 변수 사용) */
+:root {
+  --custom-bg: #fce4ec;     /* 배경색: 연한 핑크 */
+  --custom-dark: #c2185b;   /* 강조색: 다크 핑크 (버튼 등) */
+  --custom-light: #f8bbd0;  /* 보조색: 연핑크 */
+}
+
+/* 커스텀 테마를 사용할 경우 적용되는 색상 설정 */
+body.custom-mode {
+  --ion-background-color: var(--custom-bg);       /* 배경색 적용 */
+  --ion-text-color: var(--custom-dark);           /* 기본 텍스트 색상 */
+  --ion-color-primary: var(--custom-dark);        /* Ionic 주요 색상 (예: 버튼) */
+  --ion-color-secondary: var(--custom-light);     /* 보조 색상 */
+}
+
+/* 라이트 테마용 색상 오버라이드 */
+body.light {
+  --ion-background-color: #ffffff !important;     /* 흰 배경 */
+  --ion-text-color: #000000 !important;           /* 검은 글자 */
+}
+
+/* 다크 테마용 색상 오버라이드 */
+body.dark {
+  --ion-background-color: #121212 !important;     /* 어두운 배경 */
+  --ion-text-color: #ffffff !important;           /* 흰 글자 */
+}
+
+/* 커스텀 테마 중복 정의 (글자색을 하드코딩한 형태로 또 설정) */
+body.custom-mode {
+  --ion-background-color: var(--custom-bg) !important;
+  --ion-text-color: #ffffff !important;           /* 이 부분은 위 설정과 충돌 가능 */
+}
+

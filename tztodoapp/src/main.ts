@@ -18,6 +18,8 @@ import '@ionic/vue/css/palettes/dark.system.css';
 
 import './theme/variables.css';
 
+import { AdMob, AdOptions } from '@capacitor-community/admob';
+
 const app = createApp(App)
   .use(IonicVue)
   .use(router);
@@ -34,3 +36,12 @@ router.beforeEach((to, from, next) => {
 router.isReady().then(() => {
   app.mount('#app');
 });
+
+
+async function initializeAdMob() {
+  await AdMob.initialize();
+
+  // 테스트 장비 지정 및 권한 설정 예시 (iOS의 ATT 등)
+  // await AdMob.requestTrackingAuthorization();
+}
+initializeAdMob();

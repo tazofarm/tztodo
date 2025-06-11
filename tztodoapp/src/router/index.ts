@@ -1,17 +1,17 @@
 import { createRouter, createWebHistory } from '@ionic/vue-router'
 
-import Home from '@/views/Home.vue'
 import HomePage from '@/views/HomePage.vue'
+import MainPage from '@/views/MainPage.vue'
 import SettingPage from '@/views/SettingPage.vue'
 
 const routes = [
   {
     path: '/home',
-    component: Home,
+    component: HomePage,
     children: [
       {
         path: '',
-        component: HomePage
+        component: MainPage
       },
       {
         path: 'settings',
